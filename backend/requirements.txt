@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+google-api-python-client
+openai
+Pillow
+pytesseract
+aiohttp
+python-dotenv
+pydantic
+regex
+typing_extensions
+python-multipart
