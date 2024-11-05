@@ -2,37 +2,44 @@ import 'dart:async';
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:image/image.dart' as img;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final cameras = await availableCameras();
   final firstCamera = cameras.first;
-
+  // 画面の向きを縦向き固定
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
   runApp(
     MaterialApp(
       theme: ThemeData.dark(),
-      home: TakePictureScreen(camera: firstCamera),
+      home: MyHomePage(camera: firstCamera),
     ),
   );
 }
 
-class TakePictureScreen extends StatefulWidget {
-  const TakePictureScreen({super.key, required this.camera});
-
+class MyHomePage extends StatefulWidget {
   final CameraDescription camera;
 
+  const MyHomePage({super.key, required this.camera});
+
   @override
-  TakePictureScreenState createState() => TakePictureScreenState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class TakePictureScreenState extends State<TakePictureScreen> {
+class _MyHomePageState extends State<MyHomePage> {
+  int _selectedIndex = 0;
+  List<String> _responseitems = [];
+  List<String> _responseens = [];
+
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
-  List<String> _responseitems = []; // 各レスポンスメッセージを格納するリスト
-  List<String> _responseens = [];
 
   @override
   void initState() {
@@ -42,6 +49,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       ResolutionPreset.medium,
     );
     _initializeControllerFuture = _controller.initialize();
+    _controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
   }
 
   @override
@@ -50,106 +58,100 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     super.dispose();
   }
 
+  Future<File> rotateAndSaveImage(File imageFile) async {
+    final originalImage = img.decodeImage(await imageFile.readAsBytes());
+    final rotatedImage = img.copyRotate(originalImage!, angle: 0);
+    final newPath = imageFile.path.replaceAll('.jpg', '_rotated.jpg');
+    final File newImageFile = File(newPath);
+    await newImageFile.writeAsBytes(img.encodeJpg(rotatedImage));
+
+    return newImageFile;
+  }
+
 Future<void> uploadImage(String imagePath) async {
-  final file = File(imagePath);
-  final uploadUrl = 'http://172.16.0.178:8000/process_menus'; // 適切なURLに変更
+  final file = await rotateAndSaveImage(File(imagePath));
+  final uploadUrl = 'http://localhost:8888/process_menus'; // 適切なURLに変更
+
+  // 通信中ダイアログを表示
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return const AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 20),
+            Text("通信中..."),
+          ],
+        ),
+      );
+    },
+  );
 
   try {
     var request = http.MultipartRequest('POST', Uri.parse(uploadUrl));
     request.files.add(await http.MultipartFile.fromPath('file', file.path));
-
-    // タイムアウトを設定
     final response = await request.send().timeout(const Duration(seconds: 100));
 
     if (response.statusCode == 200) {
-      // レスポンスを文字列として取得
       final responseBody = await response.stream.bytesToString();
-      
-      // JSONデコード
       Map<String, dynamic> jsonResponse = jsonDecode(responseBody);
-
-      // "results" キーからリストを取得
       List<dynamic> results = jsonResponse['results'];
-      
-      // 各辞書の要素にアクセスする例
+
       setState(() {
-        _responseitems.clear(); // リストを初期化
-        _responseens.clear(); // リストを初期化
         for (var item in results) {
-          // 各要素が辞書（Map）として想定されるので、必要なキーにアクセス
-          _responseitems.add(item['menu_item']); // メッセージをリストに追加
-          _responseens.add(item['menu_en']); // メッセージをリストに追加
+          _responseitems.add(item['menu_item']);
+          _responseens.add(item['menu_en']);
         }
       });
     } else {
-    print('Upload failed with status: ${response.statusCode}');
-      
+      print('Upload failed with status: ${response.statusCode}');
     }
   } catch (e) {
-    print('Upload failed: $e'); // エラーメッセージをリストに追加
-    
+    print('Upload failed: $e');
+  } finally {
+    // 通信中ダイアログを閉じる
+    Navigator.of(context, rootNavigator: true).pop();
   }
 }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Take a Picture')),
-      body: Column(
-        children: [
-          FutureBuilder<void>(
-            future: _initializeControllerFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                return Expanded(child: CameraPreview(_controller));
-              } else {
-                return const Center(child: CircularProgressIndicator());
-              }
-            },
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          try {
-            await _initializeControllerFuture;
-            final image = await _controller.takePicture();
 
-            if (!context.mounted) return;
 
-            // 画像をアップロード
-            await uploadImage(image.path);
-
-            // 画像を表示する画面に遷移
-            await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => SquareGrid(responseitems:_responseitems, responseens:_responseens),
-              ),
-            );
-          } catch (e) {
-            print(e);
-          }
-        },
-        child: const Icon(Icons.camera_alt),
-      ),
+  Widget _buildCameraScreen() {
+    return Column(
+      children: [
+        FutureBuilder<void>(
+          future: _initializeControllerFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              return Expanded(child: CameraPreview(_controller));
+            } else {
+              return const Center(child: CircularProgressIndicator());
+            }
+          },
+        ),
+        FloatingActionButton(
+          onPressed: () async {
+            try {
+              await _initializeControllerFuture;
+              final image = await _controller.takePicture();
+              await uploadImage(image.path);
+              setState(() {
+                _selectedIndex = 1;
+              });
+            } catch (e) {
+              print(e);
+            }
+          },
+          child: const Icon(Icons.camera_alt),
+        ),
+      ],
     );
   }
-}
 
-class SquareGrid extends StatelessWidget {
-  final List<String> responseitems;
-  final List<String> responseens;
-
-  const SquareGrid({
-    super.key,
-    required this.responseitems,
-    required this.responseens,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final itemCount = responseitems.length < responseens.length ? responseitems.length : responseens.length;
-
+  Widget _buildSquareGrid() {
+    final itemCount = _responseitems.length < _responseens.length ? _responseitems.length : _responseens.length;
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
@@ -187,20 +189,19 @@ class SquareGrid extends StatelessWidget {
                   child: Column(
                     children: [
                       AutoSizeText(
-                        responseitems[index],
+                        _responseitems[index],
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 10, // ベースのフォントサイズを設定
+                          fontSize: 10,
                           decoration: TextDecoration.none,
                         ),
-                        maxLines: 2, // 最大2行まで改行を許容
-                        minFontSize: 8, // フォントサイズの最小値を設定
+                        maxLines: 2,
+                        minFontSize: 8,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 10), // 日本語と英語の間に一定のスペースを確保
                       AutoSizeText(
-                        responseens[index],
+                        _responseens[index],
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
@@ -219,6 +220,31 @@ class SquareGrid extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _selectedIndex == 0 ? _buildCameraScreen() : _buildSquareGrid(),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.camera),
+            label: 'Camera',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.grid_on),
+            label: 'Menu Items',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+      ),
     );
   }
 }
