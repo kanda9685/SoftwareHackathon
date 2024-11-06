@@ -6,6 +6,7 @@ from PIL import Image
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from backend.utils.config import GOOGLE_SEARCH_API_KEY, CSE_ID
+import time
 
 # ログの設定
 logging.basicConfig(level=logging.INFO)
@@ -35,6 +36,7 @@ async def search_image_url(service, query):
             num=1  # 1枚のみ取得
         )
         search_response = search_response.execute()
+        print(search_response)
         
         # 画像URLの取得
         items = search_response.get('items', [])
@@ -47,24 +49,6 @@ async def search_image_url(service, query):
         logging.error("An error occurred: %s", e)
         return None
 
-async def download_image(url):
-    """画像のURLから画像を非同期でダウンロードしてPIL Imageオブジェクトを返す。
-
-    Args:
-        url (str): ダウンロードする画像のURL。
-
-    Returns:
-        Image: ダウンロードした画像のPIL Imageオブジェクト。
-    """
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            if response.status == 200:
-                image_data = await response.read()
-                return Image.open(BytesIO(image_data))
-            else:
-                logging.error("Failed to download image, status code: %d", response.status)
-                return None
-
 async def get_image(menu: str) -> Image:
     """指定されたクエリで画像を検索し、取得した画像を返す。
 
@@ -76,26 +60,25 @@ async def get_image(menu: str) -> Image:
     """
     service = get_service()
     
-    query = f"{menu} 写真"
+    query = f"{menu}"
     
     # 画像URLを検索
     image_url = await search_image_url(service, query)
     
     if image_url:
-        # 画像をダウンロード
-        image = await download_image(image_url)
-        return image
+        return image_url
     else:
         logging.error("No image URL found.")
         return None
 
 # 使用例
 if __name__ == "__main__":
-    search_query = 'パンプキンパイ'  # 検索するキーワード
-    image = asyncio.run(get_image(search_query))
-    
+    search_query = 'ラーメン'  # 検索するキーワード
+    start_time = time.time()
+    image_url = asyncio.run(get_image(search_query))
+    print("実行時間：", time.time() - start_time)
     # 画像を表示
-    if image:
-        image.show()
+    if image_url:
+        print(image_url)
     else:
         print("Image could not be retrieved.")

@@ -41,24 +41,12 @@ async def process_menus_endpoint(file: UploadFile = File(...)):
         results = []
         for item in menu_items:
             # 各メニュー項目に対し、画像検索と説明文生成を非同期で実行
-            image_obj = await get_image(item)  
-            translation, description = await transcribe_and_describe(item)  
-
-            if image_obj:
-                # 画像をRGBに変換（必要な場合）
-                if image_obj.mode == 'RGBA':
-                    image_obj = image_obj.convert('RGB')  # Convert to RGB
-
-                # 画像をbase64でエンコードして文字列として返す
-                buffered = BytesIO()
-                image_obj.save(buffered, format="JPEG")
-                encoded_image = base64.b64encode(buffered.getvalue()).decode("utf-8")
-            else:
-                encoded_image = None
+            image_url = await get_image(item)  
+            translation, description = await transcribe_and_describe(item) 
 
             results.append({
                 "menu_item": item,
-                # "image": encoded_image,  # 画像のbase64エンコード
+                "image_url": image_url, 
                 "menu_en": translation,
                 "description": description
             })
