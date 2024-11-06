@@ -86,14 +86,14 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                                   topRight: Radius.circular(10),
                                 ),
                               ),
-                              child: menuItem.imageUrl != null && menuItem.imageUrl!.isNotEmpty
+                              child: menuItem.imageUrls != null && menuItem.imageUrls!.isNotEmpty
                                   ? ClipRRect(
                                       borderRadius: const BorderRadius.only(
                                         topLeft: Radius.circular(10),
                                         topRight: Radius.circular(10),
                                       ),
                                       child: Image.network(
-                                        menuItem.imageUrl!,
+                                        menuItem.imageUrls![0],
                                         fit: BoxFit.cover,
                                         loadingBuilder: (context, child, loadingProgress) {
                                           if (loadingProgress == null) {
@@ -243,171 +243,195 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
     );
   }
 
-  void _showMenuItemDialog(BuildContext context, MenuItem menuItem, Function(MenuItem) onQuantityUpdated) {
-    // 一時的な変数を作成して、quantityを管理
-    int tempQuantity = menuItem.quantity;
+void _showMenuItemDialog(
+    BuildContext context, MenuItem menuItem, Function(MenuItem) onQuantityUpdated) {
+  int tempQuantity = menuItem.quantity;
+  int currentImageIndex = 0;
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          insetPadding: EdgeInsets.all(20),
-          child: StatefulBuilder(
-            builder: (context, setState) {
-              return Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // 画像領域
-                        Container(
-                          width: double.infinity,
-                          height: 250.0,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: menuItem.imageUrl != null && menuItem.imageUrl!.isNotEmpty
-                                ? Image.network(
-                                    menuItem.imageUrl!,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Center(
-                                        child: Icon(
-                                          Icons.broken_image,
-                                          color: Colors.grey[700],
-                                          size: 50,
-                                        ),
-                                      );
-                                    },
-                                  )
-                                : Center(
-                                    child: Icon(
-                                      Icons.image,
-                                      color: Colors.grey[700],
-                                      size: 50,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        AutoSizeText(
-                          menuItem.menuJp,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 2,
-                          minFontSize: 14,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 10),
-                        AutoSizeText(
-                          menuItem.menuEn,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          maxLines: 2,
-                          minFontSize: 14,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 10),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            menuItem.description,
-                            style: const TextStyle(color: Colors.black, fontSize: 16),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        // 個数選択
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog(
+        insetPadding: EdgeInsets.all(20),
+        child: StatefulBuilder(
+          builder: (context, setState) {
+            return Stack(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 画像領域と矢印ボタン
+                      Container(
+                        width: double.infinity,
+                        height: 250.0,
+                        child: Stack(
                           children: [
-                            IconButton(
-                              icon: const Icon(Icons.remove, color: Colors.black),
-                              onPressed: () {
-                                setState(() {
-                                  if (tempQuantity > 0) {
-                                    tempQuantity--; // 表示用の一時的なquantityを減少
-                                  }
-                                });
-                              },
+                            Positioned.fill(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.network(
+                                  menuItem.imageUrls![currentImageIndex],
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Center(
+                                      child: Icon(
+                                        Icons.broken_image,
+                                        color: Colors.grey[700],
+                                        size: 50,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
                             ),
-                            Text('$tempQuantity', style: const TextStyle(fontSize: 18, color: Colors.black)),
-                            IconButton(
-                              icon: const Icon(Icons.add, color: Colors.black),
-                              onPressed: () {
-                                setState(() {
-                                  if (tempQuantity < 10) { // 最大個数の制限
-                                    tempQuantity++; // 表示用の一時的なquantityを増加
-                                  }
-                                });
-                              },
-                            ),
+                            // 左矢印ボタン
+                            if (currentImageIndex > 0)
+                              Positioned(
+                                left: 10,
+                                top: 0,
+                                bottom: 0,
+                                child: IconButton(
+                                  icon: Icon(Icons.arrow_back, color: Colors.black54),
+                                  onPressed: () {
+                                    setState(() {
+                                      currentImageIndex = (currentImageIndex - 1) % menuItem.imageUrls!.length;
+                                    });
+                                  },
+                                ),
+                              ),
+                            // 右矢印ボタン
+                            if (currentImageIndex < menuItem.imageUrls!.length - 1)
+                              Positioned(
+                                right: 10,
+                                top: 0,
+                                bottom: 0,
+                                child: IconButton(
+                                  icon: Icon(Icons.arrow_forward, color: Colors.black54),
+                                  onPressed: () {
+                                    setState(() {
+                                      currentImageIndex = (currentImageIndex + 1) % menuItem.imageUrls!.length;
+                                    });
+                                  },
+                                ),
+                              ),
                           ],
                         ),
-                        const SizedBox(height: 20),
-                        // 追加ボタン
-                        ElevatedButton(
-                          onPressed: () {
-                            // ダイアログを閉じて、親ウィジェットに更新されたMenuItemを返す
-                            onQuantityUpdated(MenuItem(
-                              menuJp: menuItem.menuJp,
-                              menuEn: menuItem.menuEn,
-                              description: menuItem.description,
-                              imageUrl: menuItem.imageUrl,
-                              quantity: tempQuantity,
-                            ));
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Confirm'),
+                      ),
+                      const SizedBox(height: 20),
+                      AutoSizeText(
+                        menuItem.menuJp,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
-                    ),
+                        maxLines: 2,
+                        minFontSize: 14,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      AutoSizeText(
+                        menuItem.menuEn,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        maxLines: 2,
+                        minFontSize: 14,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          menuItem.description,
+                          style: const TextStyle(color: Colors.black, fontSize: 16),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      // 個数選択
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.remove, color: Colors.black),
+                            onPressed: () {
+                              setState(() {
+                                if (tempQuantity > 0) {
+                                  tempQuantity--;
+                                }
+                              });
+                            },
+                          ),
+                          Text('$tempQuantity', style: const TextStyle(fontSize: 18, color: Colors.black)),
+                          IconButton(
+                            icon: const Icon(Icons.add, color: Colors.black),
+                            onPressed: () {
+                              setState(() {
+                                if (tempQuantity < 10) {
+                                  tempQuantity++;
+                                }
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      // 追加ボタン
+                      ElevatedButton(
+                        onPressed: () {
+                          onQuantityUpdated(MenuItem(
+                            menuJp: menuItem.menuJp,
+                            menuEn: menuItem.menuEn,
+                            description: menuItem.description,
+                            imageUrls: menuItem.imageUrls,
+                            quantity: tempQuantity,
+                          ));
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Confirm'),
+                      ),
+                    ],
                   ),
-                  // バツボタンを右上に配置
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(6.0), // ボタン周りに余白を追加
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6), // バツボタンの背景色を暗く
-                          shape: BoxShape.circle, // 丸型にする
-                        ),
-                        child: const Icon(
-                          Icons.close,
-                          color: Colors.white, // バツボタンの色を白に
-                          size: 24.0, // バツボタンのサイズ
-                        ),
+                ),
+                // バツボタンを右上に配置
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(6.0),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 24.0,
                       ),
                     ),
                   ),
-                ],
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
+                ),
+              ],
+            );
+          },
+        ),
+      );
+    },
+  );
+}
 }

@@ -41,12 +41,17 @@ async def process_menus_endpoint(file: UploadFile = File(...)):
         results = []
         for item in menu_items:
             # 各メニュー項目に対し、画像検索と説明文生成を非同期で実行
+            image_urls = []
             image_url = await get_image(item)  
+            # 同じ画像を3枚掲載
+            image_urls.append(image_url)
+            image_urls.append(image_url)
+            image_urls.append(image_url)
             translation, description = await transcribe_and_describe(item) 
 
             results.append({
                 "menu_item": item,
-                "image_url": image_url, 
+                "image_urls": image_urls, 
                 "menu_en": translation,
                 "description": description
             })
