@@ -24,7 +24,21 @@
 - ↑の画面から戻ると自動で、撮影したメニュー画像、メニュー一覧、選択したメニュー、がまとめて保存される
 - ↑のアルバムに提供されたメニューの写真を追加できる
 - SNSなどで共有できるようにする
-  
+
+## 使い方（フロントエンド）
+flutterのインストールは各自で行う
+
+https://zenn.dev/heyhey1028/books/flutter-basics/viewer/about_flutter
+
+```
+cd menu_app
+flutter devices \\device名の把握
+flutter run -d <device名>
+```
+
+### スマホとPCがうまくつながらないとき
+https://note-m.com/android%E7%AB%AF%E6%9C%AB%E3%81%8B%E3%82%89%E3%83%AD%E3%83%BC%E3%82%AB%E3%83%ABpc%E3%81%ABhttp%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%81%99%E3%82%8B/
+
 ## 使い方（バックエンド）
 以降のコマンドは、全て SoftwareHackathon ディレクトリで行う。
 
@@ -69,7 +83,6 @@ python backend/modules/menu_description.py
 ```
 export PYTHONPATH=SoftwareHackathonのパス
 ```
-
 
 # 大会概要
 ## 発表について
