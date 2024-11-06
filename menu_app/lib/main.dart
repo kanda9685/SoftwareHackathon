@@ -31,10 +31,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<MenuItem> menuItems = [];
 
-  // メニューアイテムを更新するメソッド
-  void updateMenuItems(List<MenuItem> items) {
+  // メニューアイテムを追加するメソッド
+
+  void addMenuItems(List<MenuItem> items) {
     setState(() {
-      menuItems = items;
+      // 受け取ったアイテムをmenuItemsに追加
+      for (var item in items) {
+        // menuJpがすでに存在する場合は追加しない
+        if (!menuItems.any((existingItem) => existingItem.menuJp == item.menuJp)) {
+          menuItems.add(item);
+        }
+      }
     });
   }
 
@@ -50,7 +57,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: _selectedIndex == 0 
         ? CameraScreen(camera: widget.camera,
-                       updateMenuItems: updateMenuItems,
+                       addMenuItems: addMenuItems,
                        updateIndex: updateIndex,
                       ) 
         : MenuGridScreen(menuItems: menuItems), 
