@@ -69,7 +69,7 @@ async def get_image(menu: str) -> Image:
         return image_url
     else:
         logging.error("No image URL found.")
-        return None
+        return ""
 
 # 使用例
 if __name__ == "__main__":
