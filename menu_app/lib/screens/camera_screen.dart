@@ -12,8 +12,14 @@ import 'package:menu_app/models/menu_item.dart';
 class CameraScreen extends StatefulWidget {
   final CameraDescription camera;
   final Function(List<MenuItem>) updateMenuItems;
+  final Function(int) updateIndex;
 
-  const CameraScreen({super.key, required this.camera, required this.updateMenuItems});
+  const CameraScreen({
+    super.key, 
+    required this.camera, 
+    required this.updateMenuItems,
+    required this.updateIndex,
+  });
 
   @override
   State<CameraScreen> createState() => _CameraScreenState();
@@ -45,6 +51,7 @@ class _CameraScreenState extends State<CameraScreen> {
   Future<void> uploadImage(String imagePath) async {
     final file = await rotateAndSaveImage(File(imagePath));  // utils/image_utils.dart のメソッドを使用して画像を回転して保存
     final uploadUrl = 'http://localhost:8888/process_menus'; // 適切なURLに変更
+    // final uploadUrl = 'http://192.168.10.111:8000/process_menus'; // 神田、開発用
 
 
     // 通信中ダイアログを表示
@@ -78,6 +85,7 @@ class _CameraScreenState extends State<CameraScreen> {
         List<MenuItem> items = results.map((item) => MenuItem.fromJson(item)).toList();
 
         widget.updateMenuItems(items);
+        widget.updateIndex(1); // メニュー一覧画面に遷移
       } else {
         // アップロード失敗時の処理
         print('Upload failed with status: ${response.statusCode}');

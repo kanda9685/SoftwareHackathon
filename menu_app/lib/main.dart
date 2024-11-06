@@ -38,11 +38,21 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  // 画面遷移を行うメソッド
+  void updateIndex(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _selectedIndex == 0 
-        ? CameraScreen(camera: widget.camera, updateMenuItems: updateMenuItems) 
+        ? CameraScreen(camera: widget.camera,
+                       updateMenuItems: updateMenuItems,
+                       updateIndex: updateIndex,
+                      ) 
         : MenuGridScreen(menuItems: menuItems), 
       bottomNavigationBar: BottomNavigationBar(
         items: const [
