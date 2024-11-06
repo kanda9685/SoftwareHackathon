@@ -50,8 +50,8 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Future<void> uploadImage(String imagePath) async {
     final file = await rotateAndSaveImage(File(imagePath));  // utils/image_utils.dart のメソッドを使用して画像を回転して保存
-    final uploadUrl = 'http://localhost:8888/process_menus'; // 適切なURLに変更
-    // final uploadUrl = 'http://192.168.10.111:8000/process_menus'; // 神田、開発用
+    // final uploadUrl = 'http://localhost:8888/process_menus'; // 適切なURLに変更
+    final uploadUrl = 'http://192.168.10.111:8000/process_menus'; // 神田、開発用
 
 
     // 通信中ダイアログを表示
