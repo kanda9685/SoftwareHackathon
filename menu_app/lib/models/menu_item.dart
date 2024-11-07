@@ -1,9 +1,10 @@
 class MenuItem {
   final String menuJp;           // 日本語メニュー名
-  final String menuEn;           // 英語メニュー名
-  final String description;      // 英語説明文
-  final List<String>? imageUrls; // 画像URLのリスト (nullを許容)
+  String menuEn;           // 英語メニュー名
+  String description;      // 英語説明文
+  List<String>? imageUrls; // 画像URLのリスト (nullを許容)
   int quantity;                  // 選択した個数
+  String selectedLanguage; // 言語設定
 
   // コンストラクタ
   MenuItem({
@@ -12,6 +13,7 @@ class MenuItem {
     required this.description,
     this.imageUrls,               // nullを許容
     this.quantity = 0,            // 初期値は0（選択なし）
+    this.selectedLanguage = 'English', 
   });
 
   // JSONからMenuItemを生成するファクトリーメソッド
