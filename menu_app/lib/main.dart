@@ -98,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
             TextButton(
               onPressed: () => _showLanguageDialog(context),
               child: Text(
-                '${Provider.of<LanguageProvider>(context).getLocalizedString('lang')}: ${Provider.of<LanguageProvider>(context).getLanguageShortCode()}', // Langを適用
+                'Lang: ${Provider.of<LanguageProvider>(context).getLanguageShortCode()}', // Langを適用
                 style: const TextStyle(color: Colors.white),
               ),
             ),
