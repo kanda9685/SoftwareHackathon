@@ -1,15 +1,17 @@
 import base64
 import logging
-from fastapi import FastAPI, File, UploadFile, HTTPException, Request
+from fastapi import FastAPI, File, UploadFile, HTTPException, Request, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from typing import List, Dict, Any
 from PIL import Image
 from io import BytesIO
 from backend.modules.ocr import get_menus
 from backend.modules.image_search import get_image
 from backend.modules.menu_description import transcribe_and_describe
-import time
+import time, os
 from fastapi.responses import JSONResponse
+from pathlib import Path
 
 app = FastAPI()
 
@@ -56,8 +58,8 @@ async def process_menus_endpoint(file: UploadFile = File(...), language: str = "
             image_url = await get_image(item['Menu_jp'])  
             # 同じ画像を3枚掲載
             image_urls.append(image_url)
-            image_urls.append(image_url)
-            image_urls.append(image_url)
+            image_urls.append('http://172.16.0.178:8000/uploaded_images/uma.jpg')
+            image_urls.append('http://172.16.0.178:8000/uploaded_images/uma.jpg')
             
             # 各メニュー項目に対して翻訳と説明を追加
             results.append({
@@ -111,4 +113,42 @@ async def translate_menus_endpoint(request: Request):
 
     except Exception as e:
         logging.error("Error in translation: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+# 画像ファイルが保存されているディレクトリ（要変更）
+IMAGE_DIRECTORY = "C:\\Users\\meron\\Desktop\\SoftwareHackathon\\backend\\uploaded_images"
+
+@app.get("/uploaded_images/{image_name}")
+async def get_localimage(image_name: str):
+    image_path = os.path.join(IMAGE_DIRECTORY, image_name)
+    if os.path.exists(image_path):
+        return FileResponse(image_path)
+    return ""
+
+@app.post("/image_upload")
+async def upload_image(file: UploadFile = File(...), file_name: str = Form(...)):
+    try:
+        # 似た名前のフォルダを探す
+        similar_folders = [f for f in os.listdir(IMAGE_DIRECTORY) if file_name in f]
+        if similar_folders:
+            # 既存の似たフォルダに保存
+            target_folder = os.path.join(IMAGE_DIRECTORY, similar_folders[0])
+        else:
+            # 新しいフォルダを作成
+            target_folder = os.path.join(IMAGE_DIRECTORY, file_name)
+            Path(target_folder).mkdir(parents=True, exist_ok=True)
+        
+        # ファイル名が重複しないように連番を付与
+        counter = 1
+        save_path = os.path.join(target_folder, f"{file_name}_{counter}.jpg")
+        while os.path.exists(save_path):
+            counter += 1
+            save_path = os.path.join(target_folder, f"{file_name}_{counter}.jpg")
+
+        # アップロードされたファイルを開いて保存
+        with open(save_path, "wb") as buffer:
+            buffer.write(await file.read())
+
+    except Exception as e:
+        logging.error("Error in uploading image: %s", e)
         raise HTTPException(status_code=500, detail=str(e))

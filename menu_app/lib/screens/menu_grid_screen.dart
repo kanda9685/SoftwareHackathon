@@ -6,6 +6,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert'; 
 import 'package:provider/provider.dart';  // Providerのインポート
 import '../providers/language_provider.dart';  // LanguageProviderのインポート
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+
+// 翻訳のエンドポイントを変更する必要がある
+
+String MAIN_URL = "http://172.16.0.178:8000";
 
 // メニュー画面
 class MenuGridScreen extends StatefulWidget {
@@ -224,7 +230,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
   Future<void> _updateLanguageForMenuItems() async {
     String selectedLanguage = Provider.of<LanguageProvider>(context, listen: false).selectedLanguage;
     
-    final url = 'http://192.168.10.111:8000/translate_menus'; // メニューの翻訳エンドポイント
+    final url = '${MAIN_URL}/translate_menus'; // メニューの翻訳エンドポイント
 
     try {
       // メニューアイテムを送信する前に、menu_jp のリストを作成
@@ -373,10 +379,94 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
     );
   }
 
+  bool isUploading = false;
+
   void _showMenuItemDialog(
       BuildContext context, MenuItem menuItem, Function(MenuItem) onQuantityUpdated) {
     int tempQuantity = menuItem.quantity;
     int currentImageIndex = 0;
+
+    
+    // Thank You メッセージを表示するダイアログ
+    void _showThankYouDialog() {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Thank you!"),
+            content: Text("Your image has been uploaded successfully."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // ダイアログを閉じる
+                },
+                child: Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    // エラーメッセージを表示するダイアログ
+    void _showErrorDialog() {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Error"),
+            content: Text("Failed to upload image. Please try again."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // ダイアログを閉じる
+                },
+                child: Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    // 画像選択のためのImagePickerインスタンス
+    final ImagePicker _picker = ImagePicker();
+    File? _selectedImage;
+
+    Future<void> _uploadImage(File imageFile) async {
+      try{
+        setState(() {
+          isUploading = true;
+        });
+
+        // サーバーのエンドポイントURL
+        var request = http.MultipartRequest(
+          'POST',
+          Uri.parse("${MAIN_URL}/image_upload")
+        );
+
+        request.fields['file_name'] = menuItem.menuJp;
+
+        request.files.add(
+          await http.MultipartFile.fromPath('file', imageFile.path),
+        );
+
+        var response = await request.send();
+
+        if (response.statusCode == 200) {
+          _showThankYouDialog();
+        } else {
+          _showErrorDialog();
+        } 
+      } catch (e) {
+        // エラーハンドリング
+        _showErrorDialog();
+      } finally {
+          setState(() {
+            isUploading = false;
+          });
+      }
+    }
 
     showDialog(
       context: context,
@@ -489,32 +579,19 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        // 個数選択
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.remove, color: Colors.black),
-                              onPressed: () {
-                                setState(() {
-                                  if (tempQuantity > 0) {
-                                    tempQuantity--;
-                                  }
-                                });
-                              },
-                            ),
-                            Text('$tempQuantity', style: const TextStyle(fontSize: 18, color: Colors.black)),
-                            IconButton(
-                              icon: const Icon(Icons.add, color: Colors.black),
-                              onPressed: () {
-                                setState(() {
-                                  if (tempQuantity < 10) {
-                                    tempQuantity++;
-                                  }
-                                });
-                              },
-                            ),
-                          ],
+                        // 画像アップロードボタン
+                        ElevatedButton(
+                          onPressed: isUploading ? null :() async {
+                            final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+                            if (pickedFile != null) {
+                              _selectedImage = File(pickedFile.path);
+                              await _uploadImage(_selectedImage!);
+                              setState(() {});  // 状態を更新してUIを再描画
+                            }
+                          },
+                           child: isUploading 
+                                ? const CircularProgressIndicator()  // アップロード中はインジケーター表示
+                                : const Text('Upload Image'),
                         ),
                         const SizedBox(height: 20),
                         // 追加ボタン
