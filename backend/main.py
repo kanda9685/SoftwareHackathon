@@ -78,6 +78,45 @@ async def process_menus_endpoint(file: UploadFile = File(...), language: str = "
         logging.error("Error in processing image: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/translate_menus", response_model=Dict[str, Any])
+async def translate_menus_endpoint(request: Request):
+    """
+    メニュー項目を指定した言語に翻訳するエンドポイント。
+
+    Args:
+        menu_items (List[Dict[str, str]]): メニュー項目のリスト（日本語）。
+        language (str): 翻訳対象の言語。
+
+    Returns:
+        dict: 翻訳されたメニュー項目を含む辞書。
+    """
+    try:
+        
+        # デコードされたリクエストデータを確認
+        data = await request.json()
+        print("Received data:", data)
+    
+        # データを取得
+        menu_items = data.get("menu_items")
+        language = data.get("language")
+        
+        results = []
+        translated_items = await transcribe_and_describe(menu_items, language)
+        
+        for item in translated_items:
+            # 各メニュー項目に対して翻訳と説明を追加
+            results.append({
+                "menu_item": item['Menu_jp'],
+                "menu_en": item['Menu_en'],
+                "description": item['Description']
+            })
+            
+        return JSONResponse(content={"results": results}, media_type="application/json; charset=UTF-8")
+
+    except Exception as e:
+        logging.error("Error in translation: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
 # 画像ファイルが保存されているディレクトリ（要変更）
 IMAGE_DIRECTORY = "C:\\Users\\meron\\Desktop\\SoftwareHackathon\\backend\\uploaded_images"
 

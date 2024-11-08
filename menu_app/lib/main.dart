@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:menu_app/providers/language_provider.dart';
 import 'package:menu_app/providers/camera_provider.dart';
 import 'package:menu_app/screens/order_history_screen.dart';
+import 'package:menu_app/screens/order_screen.dart'; // OrderScreen をインポート
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -67,6 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
       CameraScreen(camera: widget.camera, addMenuItems: addMenuItems, updateIndex: updateIndex),
       MenuGridScreen(menuItems: menuItems),
       const OrderHistoryScreen(),
+      OrderScreen(selectedItems: menuItems), // OrderScreen を追加
     ];
   }
 
@@ -93,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: _selectedIndex == 0
         ? AppBar(
-          title: Text(Provider.of<LanguageProvider>(context).getLocalizedString('menu')), // 動的にメニュータイトルを変更
+          title: Text('Menu'), // 動的にメニュータイトルを変更
           actions: [
             TextButton(
               onPressed: () => _showLanguageDialog(context),
@@ -127,6 +129,9 @@ class _MyHomePageState extends State<MyHomePage> {
             _selectedIndex = index;
           });
         },
+        selectedItemColor: Colors.white,  // 選択時のアイコン色を白に設定
+        unselectedItemColor: Colors.grey, // 非選択時のアイコン色をグレーに設定
+        backgroundColor: Colors.black, // 背景色を黒に設定（必要に応じて変更）
       ),
     );
   }

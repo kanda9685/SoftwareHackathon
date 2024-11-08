@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:menu_app/models/menu_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:auto_size_text/auto_size_text.dart'; // Make sure this import is added
 import 'package:provider/provider.dart';
-import 'package:menu_app/providers/camera_provider.dart';
-import 'package:menu_app/main.dart';
-
+import 'package:menu_app/providers/language_provider.dart'; // Import the LanguageProvider
 
 class OrderScreen extends StatelessWidget {
   final List<MenuItem> selectedItems;
@@ -22,16 +21,18 @@ class OrderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = Provider.of<LanguageProvider>(context); // Access LanguageProvider
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Order Summary")),
+      appBar: AppBar(title: Text(languageProvider.getLocalizedString('order_history'))), // Use localized string
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 注文内容と店員さんへのメッセージ
-            const Text(
-              "Please show this screen to the staff.",
+            // 注文内容と店員さんへのメッセージを一つのボックスにまとめて背景色を変える
+            AutoSizeText(
+              languageProvider.getLocalizedString('show_to_staff'), // Localized string
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
@@ -47,25 +48,54 @@ class OrderScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Selected Menu Items",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  // メニューの前のメッセージ（日本語と英語を併記）
+                  Text(
+                    languageProvider.getLocalizedString('menu_items'), // Localized string
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 5),
+                  AutoSizeText(
+                    languageProvider.getLocalizedString('please_select_menu'), // Localized string
+                    style: TextStyle(fontSize: 14, color: Colors.black),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 10),
-                  // メニューリストの表示
+                  const Divider(
+                    color: Colors.grey, 
+                    thickness: 1.5,
+                  ),
+                  const SizedBox(height: 10),
+                  // メニューリストの表示（英語と日本語を併記）
                   ...selectedItems.map((item) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        // メニュー名（日本語のみ太字に変更）
                         Expanded(
-                          child: Text(
-                            "${item.menuJp} (${item.menuEn})",
-                            style: const TextStyle(fontSize: 16),
+                          child: RichText(
+                            text: TextSpan(
+                              style: TextStyle(fontSize: 16, color: Colors.black),
+                              children: [
+                                TextSpan(
+                                  text: "${item.menuJp} ", // Japanese part
+                                  style: TextStyle(fontWeight: FontWeight.bold), // Bold Japanese part
+                                ),
+                                TextSpan(
+                                  text: "(${item.menuEn})", // English part
+                                ),
+                              ],
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        Text("x${item.quantity}", style: const TextStyle(fontSize: 14)),
+                        // Selected quantity
+                        Text(
+                          "x${item.quantity}",
+                          style: TextStyle(fontSize: 14, color: Colors.black),
+                        ),
                       ],
                     ),
                   )),
@@ -76,24 +106,13 @@ class OrderScreen extends StatelessWidget {
             Center(
               child: ElevatedButton.icon(
                 onPressed: () async {
-                  await _saveOrderHistory();  // 注文データを保存
+                  await _saveOrderHistory();  // Save order history
 
-                  // CameraProvider インスタンスを取得
-                  final cameraProvider = Provider.of<CameraProvider>(context, listen: false);
-
-                  // 現在の画面を閉じてから、カメラページへ遷移
-                  Navigator.pop(context); // 現在のページを閉じる (一つ戻る)
-                  
-                  // 新しい画面 (カメラページ) へ遷移
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MyHomePage(camera: cameraProvider.camera),
-                    ),
-                  );
+                  // Close current screen and go back
+                  Navigator.pop(context);
                 },
-                icon: const Icon(Icons.check_circle, size: 24, color: Colors.white),
-                label: const Text("Order Completed", style: TextStyle(fontSize: 16, color: Colors.white)),
+                icon: Icon(Icons.check_circle, size: 24, color: Colors.white),
+                label: Text(languageProvider.getLocalizedString('order_completed'), style: TextStyle(fontSize: 16, color: Colors.white)), // Localized string
               ),
             ),
           ],
