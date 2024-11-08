@@ -11,6 +11,8 @@ import 'package:image_picker/image_picker.dart';
 
 // 翻訳のエンドポイントを変更する必要がある
 
+String MAIN_URL = "http://172.16.0.178:8000";
+
 // メニュー画面
 class MenuGridScreen extends StatefulWidget {
   final List<MenuItem> menuItems;
@@ -228,7 +230,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
   Future<void> _updateLanguageForMenuItems() async {
     String selectedLanguage = Provider.of<LanguageProvider>(context, listen: false).selectedLanguage;
     
-    final url = 'http://172.16.0.178:8000/translate_menus'; // メニューの翻訳エンドポイント
+    final url = '${MAIN_URL}/translate_menus'; // メニューの翻訳エンドポイント
 
     try {
       // メニューアイテムを送信する前に、menu_jp のリストを作成
@@ -377,24 +379,73 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
     );
   }
 
+  bool isUploading = false;
+
   void _showMenuItemDialog(
       BuildContext context, MenuItem menuItem, Function(MenuItem) onQuantityUpdated) {
     int tempQuantity = menuItem.quantity;
     int currentImageIndex = 0;
+
+    
+    // Thank You メッセージを表示するダイアログ
+    void _showThankYouDialog() {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Thank you!"),
+            content: Text("Your image has been uploaded successfully."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // ダイアログを閉じる
+                },
+                child: Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    // エラーメッセージを表示するダイアログ
+    void _showErrorDialog() {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Error"),
+            content: Text("Failed to upload image. Please try again."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // ダイアログを閉じる
+                },
+                child: Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+    }
 
     // 画像選択のためのImagePickerインスタンス
     final ImagePicker _picker = ImagePicker();
     File? _selectedImage;
 
     Future<void> _uploadImage(File imageFile) async {
-      
+      try{
+        setState(() {
+          isUploading = true;
+        });
+
         // サーバーのエンドポイントURL
         var request = http.MultipartRequest(
           'POST',
-          Uri.parse("http://172.16.0.178:8000/image_upload")
+          Uri.parse("${MAIN_URL}/image_upload")
         );
 
-        request.fields['file_name'] = "iine.jpg";
+        request.fields['file_name'] = menuItem.menuJp;
 
         request.files.add(
           await http.MultipartFile.fromPath('file', imageFile.path),
@@ -403,13 +454,19 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
         var response = await request.send();
 
         if (response.statusCode == 200) {
-          print("Image uploaded successfully.");
+          _showThankYouDialog();
         } else {
-          print("Failed to upload image. Status Code: ${response.statusCode}");
-          print(await response.stream.bytesToString());  // エラーメッセージを表示
-        }
+          _showErrorDialog();
+        } 
+      } catch (e) {
+        // エラーハンドリング
+        _showErrorDialog();
+      } finally {
+          setState(() {
+            isUploading = false;
+          });
       }
-    
+    }
 
     showDialog(
       context: context,
@@ -524,7 +581,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                         const SizedBox(height: 10),
                         // 画像アップロードボタン
                         ElevatedButton(
-                          onPressed: () async {
+                          onPressed: isUploading ? null :() async {
                             final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
                             if (pickedFile != null) {
                               _selectedImage = File(pickedFile.path);
@@ -532,7 +589,9 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                               setState(() {});  // 状態を更新してUIを再描画
                             }
                           },
-                          child: const Text('Upload Image'),
+                           child: isUploading 
+                                ? const CircularProgressIndicator()  // アップロード中はインジケーター表示
+                                : const Text('Upload Image'),
                         ),
                         const SizedBox(height: 20),
                         // 追加ボタン
