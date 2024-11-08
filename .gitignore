@@ -1,3 +1,19 @@
 # Python cache files
 __pycache__/
 *.pyc
+
+# Flutter iOS、macOS、Windows、その他の設定ファイル
+menu_app/ios/Flutter/Debug.xcconfig
+menu_app/ios/Flutter/Release.xcconfig
+menu_app/ios/Runner.xcodeproj/project.pbxproj
+menu_app/ios/Runner.xcworkspace/contents.xcworkspacedata
+menu_app/ios/Runner/Info.plist
+menu_app/macos/Flutter/Flutter-Debug.xcconfig
+menu_app/macos/Flutter/Flutter-Release.xcconfig
+menu_app/macos/Flutter/GeneratedPluginRegistrant.swift
+menu_app/macos/Runner.xcodeproj/project.pbxproj
+menu_app/macos/Runner.xcworkspace/contents.xcworkspacedata
+menu_app/pubspec.lock
+menu_app/test/widget_test.dart
+menu_app/windows/flutter/generated_plugin_registrant.cc
+menu_app/windows/flutter/generated_plugins.cmake
