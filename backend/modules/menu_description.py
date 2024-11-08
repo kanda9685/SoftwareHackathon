@@ -2,9 +2,31 @@ import os
 import asyncio
 from openai import OpenAI
 from backend.utils.config import CHATGPT_API_KEY
+import re
 
 # OpenAIクライアントの初期化
 client = OpenAI(api_key=CHATGPT_API_KEY)
+
+def remove_before_first_japanese(text: str) -> str:
+    # 半角数字、全角数字、英字を除外
+    text = re.sub(r'[0-9a-zA-Z１-９]', '', text)  # 半角数字、英字、全角数字を除去
+
+    # 日本語の文字を含むパターン (ひらがな、カタカナ、漢字)
+    pattern = r'[\u3040-\u30ff\u4e00-\u9faf\u3400-\u4dbf\u20000-\u2a6df]'
+    
+    # 正規表現で最初の日本語文字を見つける
+    match = re.search(pattern, text)
+    
+    if match:
+        # 最初の日本語文字が見つかった場合、その位置以降を返す
+        return text[match.start():]
+    else:
+        # 日本語が含まれていない場合、そのままテキストを返す
+        return text
+    
+def remove_double_quotes(text: str) -> str:
+    # ダブルクオーテーションを除外
+    return text.replace('"', '')
 
 async def transcribe_and_describe(dish_names: list[str], language: str = "english") -> list[dict[str, str]]:
     """
@@ -50,12 +72,12 @@ async def transcribe_and_describe(dish_names: list[str], language: str = "englis
 
         # 各行を処理して、日本語名、翻訳された名前、説明文に分割
         results = []
-        for line in response_content.splitlines():
+        for line in remove_double_quotes(response_content).splitlines():
             if line.strip():  # 空行は無視
                 try:
                     menu_jp, menu_translated, description = [part.strip() for part in line.split("|")]
                     results.append({
-                        "Menu_jp": menu_jp,
+                        "Menu_jp": remove_before_first_japanese(menu_jp),
                         "Menu_en": menu_translated,
                         "Description": description
                     })
@@ -82,4 +104,3 @@ if __name__ == "__main__":
         # print(f"Menu_jp: {result['Menu_jp']}, Menu_en: {result['Menu_en']}, Description: {result['Description']}\n")
 
     print(f"\n処理後のリスト: {menus_processed}")
-    
