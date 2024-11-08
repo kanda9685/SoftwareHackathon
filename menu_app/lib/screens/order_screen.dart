@@ -24,7 +24,7 @@ class OrderScreen extends StatelessWidget {
     final languageProvider = Provider.of<LanguageProvider>(context); // Access LanguageProvider
 
     return Scaffold(
-      appBar: AppBar(title: Text(languageProvider.getLocalizedString('order_history'))), // Use localized string
+      appBar: AppBar(title: Text(languageProvider.getLocalizedString('Order_Phrase'))), // Use localized string
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -50,13 +50,13 @@ class OrderScreen extends StatelessWidget {
                 children: [
                   // メニューの前のメッセージ（日本語と英語を併記）
                   Text(
-                    languageProvider.getLocalizedString('menu_items'), // Localized string
+                    '次の料理をお願いします。',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 5),
                   AutoSizeText(
-                    languageProvider.getLocalizedString('please_select_menu'), // Localized string
+                    languageProvider.getLocalizedString('I_would_like_to_order_the_dishes.'), // Localized string
                     style: TextStyle(fontSize: 14, color: Colors.black),
                     textAlign: TextAlign.center,
                   ),

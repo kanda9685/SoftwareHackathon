@@ -56,6 +56,10 @@ class LanguageProvider with ChangeNotifier {
         return 'Korean';
       case 'Chinese':
         return 'Chinese';
+      case 'Spanish':
+        return 'Spanish';
+      case 'French':
+        return 'Franch';
       default:
         return 'English';
     }
@@ -82,8 +86,11 @@ class LanguageProvider with ChangeNotifier {
   // 英語の文字列
   final Map<String, String> _englishStrings = {
     'menu': 'Menu',
+    'MenuBite' : 'MenuBite',
+    'Lang' : 'Lang',
     'camera': 'Camera',
     'order_history': 'Order History',
+    'Order_Phrase' : 'Order Phrase',
     'language': 'Language',
     'select_language': 'Select Language',
     'cancel': 'Cancel',
@@ -91,7 +98,7 @@ class LanguageProvider with ChangeNotifier {
     'loading': 'Loading...',
     'menu items': 'Menu Items',
     'show_to_staff': 'Please show this screen to the staff.',
-    'please_select_menu': '(Please select the following menu.)',
+    'I_would_like_to_order_the_dishes.': '(I would like to order the dishes.)',
     'order_completed': 'Order Completed',
     'no_order_history': 'No order history available.',
     'order': 'Order',
@@ -110,8 +117,11 @@ class LanguageProvider with ChangeNotifier {
   // 韓国語の文字列
   final Map<String, String> _koreanStrings = {
     'menu': '메뉴',
+    'MenuBite' : '메뉴바이트',
+    'Lang' : '언어',
     'camera': '카메라',
     'order_history': '주문 내역',
+    'Order_Phrase' : '주문 표현',
     'language': '언어',
     'select_language': '언어 선택',
     'cancel': '취소',
@@ -119,7 +129,7 @@ class LanguageProvider with ChangeNotifier {
     'loading': '로딩 중...',
     'menu items': '메뉴 항목',
     'show_to_staff': '직원에게 이 화면을 보여주세요.',
-    'please_select_menu': '(다음 메뉴를 선택해 주세요.)',
+    'I_would_like_to_order_the_dishes.': '(이 요리를 주문하고 싶습니다.)',
     'order_completed': '주문 완료',
     'no_order_history': '주문 내역이 없습니다.',
     'order': '주문',
@@ -138,8 +148,11 @@ class LanguageProvider with ChangeNotifier {
   // 中国語の文字列
   final Map<String, String> _chineseStrings = {
     'menu': '菜单',
+    'MenuBite' : '菜单点',
+    'Lang' : '语',
     'camera': '相机',
     'order_history': '订单历史',
+    'Order_Phrase' : '点单用语',
     'language': '语言',
     'select_language': '选择语言',
     'cancel': '取消',
@@ -147,7 +160,7 @@ class LanguageProvider with ChangeNotifier {
     'loading': '加载中...',
     'menu items': '菜单项',
     'show_to_staff': '请向工作人员出示此屏幕。',
-    'please_select_menu': '(请选择以下菜单。)',
+    'I_would_like_to_order_the_dishes.': '(我想点这些菜。)',
     'order_completed': '订单完成',
     'no_order_history': '没有订单历史记录。',
     'order': '订单',
@@ -166,8 +179,11 @@ class LanguageProvider with ChangeNotifier {
   // スペイン語の文字列
   final Map<String, String> _spanishStrings = {
     'menu': 'Menú',
+    'MenuBite' : 'BocadoDeMenú',
+    'Lang' : 'Idioma',
     'camera': 'Cámara',
     'order_history': 'Historial de pedidos',
+    'Order_Phrase' : 'Frase de Pedido',
     'language': 'Idioma',
     'select_language': 'Seleccionar idioma',
     'cancel': 'Cancelar',
@@ -175,7 +191,7 @@ class LanguageProvider with ChangeNotifier {
     'loading': 'Cargando...',
     'menu items': 'Artículos del menú',
     'show_to_staff': 'Por favor, muestre esta pantalla al personal.',
-    'please_select_menu': '(Por favor, seleccione el siguiente menú.)',
+    'I_would_like_to_order_the_dishes.': '(Me gustaría ordenar los platos.)',
     'order_completed': 'Pedido completado',
     'no_order_history': 'No hay historial de pedidos.',
     'order': 'Pedido',
@@ -194,8 +210,11 @@ class LanguageProvider with ChangeNotifier {
   // フランス語の文字列
   final Map<String, String> _frenchStrings = {
     'menu': 'Menu',
+    'MenuBite' : 'MenuMorceau',
+    'Lang' : 'Lang',
     'camera': 'Caméra',
     'order_history': 'Historique des commandes',
+    'Order_Phrase' : 'Phrase de Commande',
     'language': 'Langue',
     'select_language': 'Sélectionner la langue',
     'cancel': 'Annuler',
@@ -203,7 +222,7 @@ class LanguageProvider with ChangeNotifier {
     'loading': 'Chargement...',
     'menu items': 'Articles du menu',
     'show_to_staff': 'Veuillez montrer cet écran au personnel.',
-    'please_select_menu': '(Veuillez sélectionner le menu suivant.)',
+    'I_would_like_to_order_the_dishes.': '(Je voudrais commander les plats.)',
     'order_completed': 'Commande terminée',
     'no_order_history': 'Aucun historique de commandes.',
     'order': 'Commander',

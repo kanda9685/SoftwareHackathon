@@ -30,7 +30,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Menu'),
+        title: Text(languageProvider.getLocalizedString('menu')),
         actions: [
           // 言語設定ボタンの追加
           IconButton(
@@ -140,24 +140,11 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                                   padding: const EdgeInsets.all(4.0),
                                   child: Column(
                                     children: [
-                                      SizedBox(height: 20), 
-                                      AutoSizeText(
-                                        menuItem.menuEn,
-                                        style: const TextStyle(
-                                          color: Colors.black87,
-                                          fontSize: 18,
-                                          decoration: TextDecoration.none,
-                                        ),
-                                        maxLines: 2,
-                                        minFontSize: 6,
-                                        overflow: TextOverflow.ellipsis,
-                                        textAlign: TextAlign.center,
-                                      ),
                                       AutoSizeText(
                                         menuItem.menuJp,
                                         style: const TextStyle(
                                           color: Colors.black87,
-                                          fontSize: 14,
+                                          fontSize: 12,
                                           decoration: TextDecoration.none,
                                         ),
                                         maxLines: 2,
@@ -165,6 +152,19 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                                         overflow: TextOverflow.ellipsis,
                                         textAlign: TextAlign.center,
                                       ),
+                                      AutoSizeText(
+                                        menuItem.menuEn,
+                                        style: const TextStyle(
+                                          color: Colors.black87,
+                                          fontSize: 12,
+                                          decoration: TextDecoration.none,
+                                        ),
+                                        maxLines: 2,
+                                        minFontSize: 6,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                      ),
+
                                     ],
                                   ),
                                 ),
