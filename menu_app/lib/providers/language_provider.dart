@@ -1,8 +1,25 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 
 class LanguageProvider with ChangeNotifier {
-  String _selectedLanguage = 'English'; // 初期設定はEnglish
+  
+  // プロパティを初期化
+  String _selectedLanguage;
 
+  // コンストラクタでset_languageを呼び出す
+  LanguageProvider() : _selectedLanguage = _setLanguage();
+
+  // 現在のロケールに応じて言語を設定
+  static String _setLanguage() {
+    Locale deviceLocale = window.locale;
+    if (deviceLocale.languageCode == 'zh') {
+      return "Chinese";
+    } else if (deviceLocale.languageCode == 'ko') {
+      return "Korean";
+    } else {
+      return "English";
+    }
+  }
   String get selectedLanguage => _selectedLanguage;
 
   void updateLanguage(String newLanguage) {
