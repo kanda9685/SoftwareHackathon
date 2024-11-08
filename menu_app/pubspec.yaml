@@ -50,6 +50,8 @@ dependencies:
   cloud_firestore: ^5.4.5
   shared_preferences: ^2.3.2
   image_picker: ^1.1.2
+  geolocator: ^13.0.1
+  material: ^1.0.0+2
 
 dev_dependencies:
   flutter_test:

@@ -9,6 +9,7 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:menu_app/models/menu_item.dart';
+import 'package:geolocator/geolocator.dart';
 
 class CameraScreen extends StatefulWidget {
   final CameraDescription camera;
@@ -193,6 +194,25 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
     );
   }
 
+    // 位置情報を取得する関数
+  Future<Map<String, dynamic>> _getCurrentLocation() async {
+    // パーミッションがあるか確認
+    LocationPermission permission = await Geolocator.checkPermission();
+    
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return {"Latitude": Null, "Longitude": Null};
+      }
+    }
+
+    // 現在位置を取得
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+        return  {"Latitude": position.latitude, "Longitude": position.longitude};
+  }
+
   Future<void> uploadImage(String imagePath) async {
     String selectedLanguage = Provider.of<LanguageProvider>(context, listen: false).selectedLanguage;
 
@@ -216,15 +236,26 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
       },
     );
 
+    final gps_info = await _getCurrentLocation();
+
     try {
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse(uploadUrl).replace(queryParameters: {'language': selectedLanguage}),
+        Uri.parse(uploadUrl),
       );
+    
+      request.fields['lat'] = gps_info["Latitude"].toString();
+      request.fields['lng'] = gps_info["Longitude"].toString();
+      request.fields['language'] = selectedLanguage;
+
+      print(request);
       request.files.add(await http.MultipartFile.fromPath('file', file.path));
+
+      print(request.files);
 
       final response = await request.send().timeout(const Duration(seconds: 100));
 
+      print(selectedLanguage);
       Navigator.of(context, rootNavigator: true).pop(); // 通信中ダイアログを閉じる
 
       if (response.statusCode == 200) {
@@ -247,6 +278,7 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
       }
     } catch (e) {
       Navigator.of(context, rootNavigator: true).pop(); // 通信中ダイアログを閉じる
+      print("Error occurred: $e");
       _showErrorDialog();
     }
   }
@@ -254,7 +286,7 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Display the Picture')),
+      appBar: AppBar(title: const Text('Preview')),
       body: Image.file(File(widget.imagePath)),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {

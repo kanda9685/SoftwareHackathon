@@ -30,7 +30,10 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(languageProvider.getLocalizedString('menu')),
+        title: widget.menuItems.isEmpty ? Text(languageProvider.getLocalizedString('_menu')) 
+                                        : SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                                      child:Text(widget.menuItems[0].shop_name+languageProvider.getLocalizedString('menu'))),
         actions: [
           // 言語設定ボタンの追加
           IconButton(

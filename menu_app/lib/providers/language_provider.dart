@@ -85,7 +85,8 @@ class LanguageProvider with ChangeNotifier {
 
   // 英語の文字列
   final Map<String, String> _englishStrings = {
-    'menu': 'Menu',
+    'menu': '\'s Menu',
+    '_menu': 'Menu',
     'MenuBite' : 'MenuBite',
     'Lang' : 'Lang',
     'camera': 'Camera',
@@ -116,7 +117,8 @@ class LanguageProvider with ChangeNotifier {
 
   // 韓国語の文字列
   final Map<String, String> _koreanStrings = {
-    'menu': '메뉴',
+    'menu': ' 의 메뉴',
+    '_menu': '메뉴',
     'MenuBite' : '메뉴바이트',
     'Lang' : '언어',
     'camera': '카메라',
@@ -147,7 +149,8 @@ class LanguageProvider with ChangeNotifier {
 
   // 中国語の文字列
   final Map<String, String> _chineseStrings = {
-    'menu': '菜单',
+    'menu': '的菜单',
+    '_menu': '菜单',
     'MenuBite' : '菜单点',
     'Lang' : '语',
     'camera': '相机',
@@ -178,7 +181,8 @@ class LanguageProvider with ChangeNotifier {
 
   // スペイン語の文字列
   final Map<String, String> _spanishStrings = {
-    'menu': 'Menú',
+    'menu': 'Menú de ',
+    '_menu' : 'Menú',
     'MenuBite' : 'BocadoDeMenú',
     'Lang' : 'Idioma',
     'camera': 'Cámara',
@@ -209,7 +213,8 @@ class LanguageProvider with ChangeNotifier {
 
   // フランス語の文字列
   final Map<String, String> _frenchStrings = {
-    'menu': 'Menu',
+    'menu': 'Menu de ',
+    '_menu': 'Menu',
     'MenuBite' : 'MenuMorceau',
     'Lang' : 'Lang',
     'camera': 'Caméra',

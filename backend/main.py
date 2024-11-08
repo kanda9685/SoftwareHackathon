@@ -29,8 +29,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+logging.basicConfig(level=logging.ERROR, encoding="utf-8")
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
+
+
 @app.post("/process_menus", response_model=Dict[str, Any])
-async def process_menus_endpoint(file: UploadFile = File(...), language: str = "english"):
+async def process_menus_endpoint(lat: str=Form(...), lng: str=Form(...), file: UploadFile = File(...), language: str = Form(...)):
     """
     画像を処理してメニュー項目を抽出し、画像と説明文を生成するエンドポイント。
 
@@ -50,7 +55,7 @@ async def process_menus_endpoint(file: UploadFile = File(...), language: str = "
 
         results = []
         start_time = time.time()
-        
+
         # メニュー項目を処理
         items = await transcribe_and_describe(menu_items, language)
 
@@ -62,6 +67,10 @@ async def process_menus_endpoint(file: UploadFile = File(...), language: str = "
         # 並列に画像を取得
         image_urls = await asyncio.gather(*image_tasks)
 
+        lat = float(lat)
+        lng = float(lng)
+        shop_name = get_nearby_restaurants(lat,lng)
+    
         # 取得した画像URLと他の情報を組み合わせて結果を生成
         for i, item in enumerate(items):
             image_url = image_urls[i]  # 非同期で取得した画像URL
@@ -80,7 +89,8 @@ async def process_menus_endpoint(file: UploadFile = File(...), language: str = "
                 "menu_item": item['Menu_jp'],
                 "menu_en": item['Menu_en'],
                 "description": item['Description'],
-                "image_urls": image_urls_list
+                "image_urls": image_urls_list,
+                'shop_name':shop_name
             })
         
         return {"results": results, "time": time.time() - start_time}
@@ -131,11 +141,11 @@ async def translate_menus_endpoint(request: Request):
 # 画像ファイルが保存されているディレクトリ（要変更）
 IMAGE_DIRECTORY = "C:\\Users\\meron\\Desktop\\SoftwareHackathon\\backend\\uploaded_images"
 
-# image_name=旬の魚のカルパッチョ
-@app.get("/uploaded_images/{folder_name}/{image_name}")
-async def get_localimage(image_name: str, folder_name: str, shop_name: str):
 
-    image_path = os.path.join(IMAGE_DIRECTORY,shop_name,folder_name,image_name)
+@app.get("/uploaded_images/{folder_name}/{image_name}")
+async def get_localimage(image_name: str, folder_name: str):
+
+    image_path = os.path.join(IMAGE_DIRECTORY,folder_name,image_name)
 
     if os.path.exists(image_path):
         return FileResponse(image_path)
@@ -169,89 +179,45 @@ async def upload_image(file: UploadFile = File(...), file_name: str = Form(...))
         logging.error("Error in uploading image: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
-# Google Maps APIのURLとAPIキーを設定
-GOOGLE_MAPS_API_KEY = "AIzaSyDpAo2dH8sFpPdcyhObO02txOgXOJGvqoA"
-GOOGLE_MAPS_API_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+def get_nearby_restaurants(lat: float, lng: float):
 
+    # Google Maps APIのURLとAPIキーを設定
+    GOOGLE_MAPS_API_KEY = "AIzaSyDpAo2dH8sFpPdcyhObO02txOgXOJGvqoA"
+    GOOGLE_MAPS_API_URL = "https://places.googleapis.com/v1/places:searchNearby"
 
-# ハーサイン距離計算用の関数
-def haversine(lat1, lon1, lat2, lon2):
-    """
-    ハーサイン距離計算
-    :param lat1, lon1: 出発地点の緯度・経度
-    :param lat2, lon2: 目的地の緯度・経度
-    :return: 2地点間の距離（メートル単位）
-    """
-    # 地球の半径 (メートル)
-    R = 6371000
-
-    # 緯度と経度をラジアンに変換
-    lat1 = math.radians(lat1)
-    lon1 = math.radians(lon1)
-    lat2 = math.radians(lat2)
-    lon2 = math.radians(lon2)
-
-    # ハーサイン距離の計算
-    dlat = lat2 - lat1
-    dlng = lon2 - lon1
-    a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlng / 2) ** 2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-
-    # 距離をメートルで返す
-    return R * c
-
-@app.get("/nearby_restaurants/")
-async def get_nearby_restaurants(lat: float, lng: float, radius: int = 10, type: str = "restaurant") -> dict:
-    """
-    最寄りの飲食店を取得するAPI
-    :param lat: 端末の緯度
-    :param lng: 端末の経度
-    :param radius: 検索半径 (メートル単位)
-    :param type: 検索する施設の種類。デフォルトは"restaurant"
-    :return: 緯度と経度の絶対値距離が最小の飲食店
-    """
-    # Google Maps APIのリクエストパラメータ
-    params = {
-        "location": f"{lat},{lng}",
-        "radius": radius,
-        "type": type,
-        "key": GOOGLE_MAPS_API_KEY,
+    # ヘッダーの設定
+    headers = {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY,  # ここに実際のAPIキーを挿入
+        "X-Goog-FieldMask": "places.displayName"
     }
 
-    # Google Maps APIを呼び出し
-    response = requests.get(GOOGLE_MAPS_API_URL, params=params)
+    # リクエストデータ（JSON形式）
+    data = {
+        "includedTypes": ["restaurant"],
+        "maxResultCount": 10,
+        "languageCode" : "ja",
+        "rankPreference" : "DISTANCE",
+        "locationRestriction": {
+            "circle": {
+                "center": {
+                    "latitude": lat,
+                    "longitude": lng
+                },
+                "radius": 500.0
+            }
+        }
+    }
+
+    # POSTリクエストを送信
+    response = requests.post(GOOGLE_MAPS_API_URL, headers=headers, json=data)
 
     # レスポンスが正常でない場合はエラーメッセージを返す
     if response.status_code != 200:
-        return {"error": "Failed to fetch data from Google Maps API"}
-
-    # 結果をJSON形式で取得
-    results = response.json().get("results", [])
-    
-    # 最寄りの飲食店を探す
-    nearest_restaurant = None
-    min_distance = float('inf')  # 最小距離（初期値は無限大）
-
-    for restaurant in results:
-        # 飲食店の緯度・経度を取得
-        rest_lat = restaurant["geometry"]["location"]["lat"]
-        rest_lng = restaurant["geometry"]["location"]["lng"]
-
-        # 端末から飲食店までの距離を計算
-        distance = haversine(lat, lng, rest_lat, rest_lng)
-
-        # 最小距離を更新
-        if distance < min_distance:
-            min_distance = distance
-            nearest_restaurant = {
-                "name": restaurant["name"],
-                "lat": rest_lat,
-                "lng": rest_lng,
-                "distance": min_distance
-            }
-
-    # 最寄りの飲食店が見つからなかった場合のエラーハンドリング
-    if not nearest_restaurant:
         return "error"
 
-    return nearest_restaurant["name"]
+    response=response.json()
+    nearest_restaurant = response["places"][0]["displayName"]["text"]
+    
+    print(nearest_restaurant)
+    return nearest_restaurant
