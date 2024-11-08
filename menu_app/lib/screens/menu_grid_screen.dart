@@ -5,13 +5,13 @@ import 'package:menu_app/screens/order_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; 
 import 'package:provider/provider.dart';  // Providerのインポート
-import '../providers/language_provider.dart';  // LanguageProviderのインポート
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:menu_app/providers/language_provider.dart';
 
 // 翻訳のエンドポイントを変更する必要がある
 
-String MAIN_URL = "http://172.16.0.178:8000";
+String MAIN_URL = "http://192.168.10.111:8000";
 
 // メニュー画面
 class MenuGridScreen extends StatefulWidget {
@@ -26,6 +26,7 @@ class MenuGridScreen extends StatefulWidget {
 class _MenuGridScreenState extends State<MenuGridScreen> {
   @override
   Widget build(BuildContext context) {
+  final languageProvider = Provider.of<LanguageProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -46,7 +47,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
         ],
       ),
       body: widget.menuItems.isEmpty
-        ? const Center(child: Text("No menus."))
+        ? Center(child: Text(languageProvider.getLocalizedString('no_menu')))
         : Column(
           children: [
             // メニューアイテムのグリッド表示
@@ -214,10 +215,10 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.checklist, size: 20), // アイコンの追加
-                    SizedBox(width: 8), // アイコンとテキストの間にスペースを追加
-                    Text('Order'),
+                  children: [
+                    const Icon(Icons.checklist, size: 20), // アイコンの追加
+                    const SizedBox(width: 8), // アイコンとテキストの間にスペースを追加
+                    Text(languageProvider.getLocalizedString('order')),
                   ],
                 ),
               ),
@@ -277,10 +278,11 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
   showDialog(
     context: context,
     builder: (BuildContext context) {
+      final languageProvider = Provider.of<LanguageProvider>(context);
       return StatefulBuilder(  // StatefulBuilderを使用して、ダイアログ内でsetStateを呼び出せるようにする
         builder: (BuildContext context, StateSetter setState) {
           return AlertDialog(
-            title: const Text("Select Language"),
+            title: Text(languageProvider.getLocalizedString('select_language')),
             content: Container(
               width: double.maxFinite,
               child: ListView(
@@ -307,7 +309,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: const Text("Cancel"),
+                child: Text(languageProvider.getLocalizedString('cancel')),
               ),
               TextButton(
                 onPressed: () async {
@@ -322,12 +324,12 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                         context: context,
                         barrierDismissible: false,
                         builder: (BuildContext context) {
-                          return const AlertDialog(
+                          return AlertDialog(
                             content: Row(
                               children: [
-                                CircularProgressIndicator(),
-                                SizedBox(width: 20),
-                                Text("Loading..."),
+                                const CircularProgressIndicator(),
+                                const SizedBox(width: 20),
+                                Text(languageProvider.getLocalizedString('loading')),
                               ],
                             ),
                           );
@@ -339,7 +341,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                   }
                   Navigator.of(context).pop();
                 },
-                child: const Text("Confirm"),
+                child: Text(languageProvider.getLocalizedString('confirm')),
               ),
             ],
           );
@@ -354,15 +356,16 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final languageProvider = Provider.of<LanguageProvider>(context);
         return AlertDialog(
-          title: const Text('Delete All Menus'),
-          content: const Text('Are you sure you want to delete all menu items?'),
+          title: Text(languageProvider.getLocalizedString('delete_all_menus')),
+          content: Text(languageProvider.getLocalizedString('delete_all_menus_confirmation')),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child: Text(languageProvider.getLocalizedString('cancel')),
             ),
             TextButton(
               onPressed: () {
@@ -371,7 +374,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                 });
                 Navigator.of(context).pop();
               },
-              child: const Text('Delete'),
+              child: Text(languageProvider.getLocalizedString('delete')),
             ),
           ],
         );
@@ -382,19 +385,19 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
   bool isUploading = false;
 
   void _showMenuItemDialog(
-      BuildContext context, MenuItem menuItem, Function(MenuItem) onQuantityUpdated) {
+    BuildContext context, MenuItem menuItem, Function(MenuItem) onQuantityUpdated) {
     int tempQuantity = menuItem.quantity;
     int currentImageIndex = 0;
-
     
     // Thank You メッセージを表示するダイアログ
     void _showThankYouDialog() {
       showDialog(
         context: context,
         builder: (BuildContext context) {
+          final languageProvider = Provider.of<LanguageProvider>(context);
           return AlertDialog(
-            title: Text("Thank you!"),
-            content: Text("Your image has been uploaded successfully."),
+            title: Text(languageProvider.getLocalizedString('thank_you')),
+            content: Text(languageProvider.getLocalizedString('image_uploaded')),
             actions: [
               TextButton(
                 onPressed: () {
@@ -413,15 +416,16 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
       showDialog(
         context: context,
         builder: (BuildContext context) {
+          final languageProvider = Provider.of<LanguageProvider>(context);
           return AlertDialog(
-            title: Text("Error"),
-            content: Text("Failed to upload image. Please try again."),
+            title: Text(languageProvider.getLocalizedString('error')),
+            content: Text(languageProvider.getLocalizedString('failed_to_upload_image')),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // ダイアログを閉じる
                 },
-                child: Text("OK"),
+                child: Text(languageProvider.getLocalizedString('ok')),
               ),
             ],
           );
@@ -620,7 +624,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                             },
                            child: isUploading 
                                 ? const CircularProgressIndicator()  // アップロード中はインジケーター表示
-                                : const Text('Upload Image'),
+                                : Text(Provider.of<LanguageProvider>(context).getLocalizedString('upload_image')),
                           ),
                           const SizedBox(width: 30),
                           // 追加ボタン
@@ -635,7 +639,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                               ));
                               Navigator.of(context).pop();
                             },
-                            child: const Text('Confirm'),
+                            child: Text(Provider.of<LanguageProvider>(context).getLocalizedString('confirm')),
                           )],
                         )
                       ],

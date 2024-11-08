@@ -3,7 +3,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';  // Providerのインポート
-import '../providers/language_provider.dart';  // LanguageProviderのインポート
+import 'package:menu_app/providers/language_provider.dart';
 import '../utils/image_utils.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
@@ -203,12 +203,13 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return const AlertDialog(
+        final languageProvider = Provider.of<LanguageProvider>(context);
+        return AlertDialog(
           content: Row(
             children: [
-              CircularProgressIndicator(),
-              SizedBox(width: 20),
-              Text("Loading..."),
+              const CircularProgressIndicator(),
+              const SizedBox(width: 20),
+              Text(languageProvider.getLocalizedString('loading')),
             ],
           ),
         );
