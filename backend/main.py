@@ -118,7 +118,7 @@ async def translate_menus_endpoint(request: Request):
 IMAGE_DIRECTORY = "C:\\Users\\meron\\Desktop\\SoftwareHackathon\\backend\\uploaded_images"
 
 @app.get("/uploaded_images/{image_name}")
-async def get_image(image_name: str):
+async def get_localimage(image_name: str):
     image_path = os.path.join(IMAGE_DIRECTORY, image_name)
     if os.path.exists(image_path):
         return FileResponse(image_path)
