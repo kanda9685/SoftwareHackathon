@@ -513,7 +513,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                               // 左矢印ボタン
                               if (currentImageIndex > 0)
                                 Positioned(
-                                  left: 10,
+                                  left: 5,
                                   top: 0,
                                   bottom: 0,
                                   child: IconButton(
@@ -528,7 +528,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                               // 右矢印ボタン
                               if (currentImageIndex < menuItem.imageUrls!.length - 1)
                                 Positioned(
-                                  right: 10,
+                                  right: 5,
                                   top: 0,
                                   bottom: 0,
                                   child: IconButton(
@@ -579,35 +579,65 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                           ),
                         ),
                         const SizedBox(height: 10),
+                        // 個数選択
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.remove, color: Colors.black),
+                              onPressed: () {
+                                setState(() {
+                                  if (tempQuantity > 0) {
+                                    tempQuantity--;
+                                  }
+                                });
+                              },
+                            ),
+                            Text('$tempQuantity', style: const TextStyle(fontSize: 18, color: Colors.black)),
+                            IconButton(
+                              icon: const Icon(Icons.add, color: Colors.black),
+                              onPressed: () {
+                                setState(() {
+                                  if (tempQuantity < 10) {
+                                    tempQuantity++;
+                                  }
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                        Row(
                         // 画像アップロードボタン
-                        ElevatedButton(
-                          onPressed: isUploading ? null :() async {
-                            final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-                            if (pickedFile != null) {
-                              _selectedImage = File(pickedFile.path);
-                              await _uploadImage(_selectedImage!);
-                              setState(() {});  // 状態を更新してUIを再描画
-                            }
-                          },
+                        children: [
+                          ElevatedButton(
+                            onPressed: isUploading ? null :() async {
+                              final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+                              if (pickedFile != null) {
+                                _selectedImage = File(pickedFile.path);
+                                await _uploadImage(_selectedImage!);
+                                setState(() {});  // 状態を更新してUIを再描画
+                              }
+                            },
                            child: isUploading 
                                 ? const CircularProgressIndicator()  // アップロード中はインジケーター表示
                                 : const Text('Upload Image'),
-                        ),
-                        const SizedBox(height: 20),
-                        // 追加ボタン
-                        ElevatedButton(
-                          onPressed: () {
-                            onQuantityUpdated(MenuItem(
-                              menuJp: menuItem.menuJp,
-                              menuEn: menuItem.menuEn,
-                              description: menuItem.description,
-                              imageUrls: menuItem.imageUrls,
-                              quantity: tempQuantity,
-                            ));
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Confirm'),
-                        ),
+                          ),
+                          const SizedBox(width: 30),
+                          // 追加ボタン
+                          ElevatedButton(
+                            onPressed: () {
+                              onQuantityUpdated(MenuItem(
+                                menuJp: menuItem.menuJp,
+                                menuEn: menuItem.menuEn,
+                                description: menuItem.description,
+                                imageUrls: menuItem.imageUrls,
+                                quantity: tempQuantity,
+                              ));
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Confirm'),
+                          )],
+                        )
                       ],
                     ),
                   ),
