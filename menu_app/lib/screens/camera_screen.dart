@@ -153,20 +153,21 @@ class DisplayPictureScreen extends StatefulWidget {
 }
 
 class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
+
   void _zeroDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Sorry."),
-          content: Text("Failed to find any dishes. Please try again."),
+          title: Text(Provider.of<LanguageProvider>(context).getLocalizedString('Sorry.')),
+          content: Text(Provider.of<LanguageProvider>(context).getLocalizedString('Faildish')),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // ダイアログを閉じる
                 Navigator.of(context).pop(); // CameraScreenに戻る
               },
-              child: Text("OK"),
+              child: Text(Provider.of<LanguageProvider>(context).getLocalizedString('ok')),
             ),
           ],
         );
@@ -179,14 +180,14 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Error"),
-          content: Text("Failed to upload image. Please try again."),
+          title: Text(Provider.of<LanguageProvider>(context).getLocalizedString('error')),
+          content: Text(Provider.of<LanguageProvider>(context).getLocalizedString('failed_to_upload_image')),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // ダイアログを閉じる
               },
-              child: Text("OK"),
+              child: Text(Provider.of<LanguageProvider>(context).getLocalizedString('ok')),
             ),
           ],
         );
@@ -286,7 +287,7 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Preview')),
+      appBar: AppBar(title: Text(Provider.of<LanguageProvider>(context).getLocalizedString('Preview'))),
       body: Image.file(File(widget.imagePath)),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
