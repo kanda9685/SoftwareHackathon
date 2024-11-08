@@ -12,6 +12,7 @@ from backend.modules.menu_description import transcribe_and_describe
 import time, os
 from fastapi.responses import JSONResponse
 from pathlib import Path
+import asyncio
 
 app = FastAPI()
 
@@ -42,77 +43,39 @@ async def process_menus_endpoint(file: UploadFile = File(...), language: str = "
         # OCR処理を非同期で実行してメニュー項目を抽出
         menu_items = await get_menus(image)
         print(language)
-        # print(menu_items)
 
         results = []
-        
         start_time = time.time()
         
+        # メニュー項目を処理
         items = await transcribe_and_describe(menu_items, language)
-        # print(items)
 
-        for item in items:
+        # 各メニュー項目の画像を並列で非同期に取得
+        image_tasks = [
+            get_image(item['Menu_jp']) for item in items
+        ]
+
+        # 並列に画像を取得
+        image_urls = await asyncio.gather(*image_tasks)
+
+        # 取得した画像URLと他の情報を組み合わせて結果を生成
+        for i, item in enumerate(items):
+            image_url = image_urls[i]  # 非同期で取得した画像URL
+            # 同じ画像を3枚掲載（例）
+            image_urls_list = [image_url, 'http://172.16.0.178:8000/uploaded_images/uma.jpg', 'http://172.16.0.178:8000/uploaded_images/uma.jpg']
             
-            # 各メニュー項目に対し、画像検索と説明文生成を非同期で実行
-            image_urls = []
-            image_url = await get_image(item['Menu_jp'])  
-            # 同じ画像を3枚掲載
-            image_urls.append(image_url)
-            image_urls.append('http://172.16.0.178:8000/uploaded_images/uma.jpg')
-            image_urls.append('http://172.16.0.178:8000/uploaded_images/uma.jpg')
-            
-            # 各メニュー項目に対して翻訳と説明を追加
+            # 結果に追加
             results.append({
                 "menu_item": item['Menu_jp'],
                 "menu_en": item['Menu_en'],
                 "description": item['Description'],
-                "image_urls": image_urls
+                "image_urls": image_urls_list
             })
-            
+        
         return {"results": results, "time": time.time() - start_time}
 
     except Exception as e:
         logging.error("Error in processing image: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/translate_menus", response_model=Dict[str, Any])
-async def translate_menus_endpoint(request: Request):
-    """
-    メニュー項目を指定した言語に翻訳するエンドポイント。
-
-    Args:
-        menu_items (List[Dict[str, str]]): メニュー項目のリスト（日本語）。
-        language (str): 翻訳対象の言語。
-
-    Returns:
-        dict: 翻訳されたメニュー項目を含む辞書。
-    """
-    try:
-        
-        # デコードされたリクエストデータを確認
-        data = await request.json()
-        print("Received data:", data)
-    
-        # データを取得
-        menu_items = data.get("menu_items")
-        language = data.get("language")
-        
-        results = []
-        translated_items = await transcribe_and_describe(menu_items, language)
-        
-        for item in translated_items:
-            # 各メニュー項目に対して翻訳と説明を追加
-            results.append({
-                "menu_item": item['Menu_jp'],
-                "menu_en": item['Menu_en'],
-                "description": item['Description']
-            })
-            
-        return JSONResponse(content={"results": results}, media_type="application/json; charset=UTF-8")
-
-    except Exception as e:
-        logging.error("Error in translation: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 # 画像ファイルが保存されているディレクトリ（要変更）

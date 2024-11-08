@@ -33,9 +33,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData.dark(),
-      home: MyHomePage(camera: camera),
+    return Consumer<LanguageProvider>(
+      builder: (context, languageProvider, child) {
+        return MaterialApp(
+          theme: ThemeData.dark(),
+          home: MyHomePage(camera: camera),
+        );
+      },
     );
   }
 }
@@ -88,30 +92,33 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _selectedIndex == 0
-          ? AppBar(
-              title: const Text('Menu'),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.language, color: Colors.white),
-                  onPressed: () => _showLanguageDialog(context),
-                ),
-              ],
-            )
-          : null,
+        ? AppBar(
+          title: Text(Provider.of<LanguageProvider>(context).getLocalizedString('menu')), // 動的にメニュータイトルを変更
+          actions: [
+            TextButton(
+              onPressed: () => _showLanguageDialog(context),
+              child: Text(
+                '${Provider.of<LanguageProvider>(context).getLocalizedString('lang')}: ${Provider.of<LanguageProvider>(context).getLanguageShortCode()}', // Langを適用
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        )
+        : null,
       body: _screens[_selectedIndex], // 選択された画面を表示
       bottomNavigationBar: BottomNavigationBar(
-        items: const [
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.camera),
-            label: 'Camera',
+            label: Provider.of<LanguageProvider>(context).getLocalizedString('camera'), // 言語に基づくボタンラベル
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.grid_on),
-            label: 'Menu Items',
+            label: Provider.of<LanguageProvider>(context).getLocalizedString('menu items'), // 言語に基づくボタンラベル
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
-            label: 'Order History',
+            label: Provider.of<LanguageProvider>(context).getLocalizedString('order_history'), // 言語に基づくボタンラベル
           ),
         ],
         currentIndex: _selectedIndex,
@@ -130,24 +137,24 @@ class _MyHomePageState extends State<MyHomePage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return StatefulBuilder( // StatefulBuilderを使用して、ダイアログ内でsetStateを呼び出せるようにする
+        return StatefulBuilder(  // StatefulBuilderを使用して状態管理を行う
           builder: (BuildContext context, StateSetter setState) {
             return AlertDialog(
-              title: const Text("Select Language"),
+              title: Text(Provider.of<LanguageProvider>(context, listen: false).getLocalizedString('select_language')), // 言語選択タイトル
               content: Container(
                 width: double.maxFinite,
                 child: ListView(
                   shrinkWrap: true,
-                  children: <String>['English', 'Chinese', 'Korean']
+                  children: <String>['English', 'Korean', 'Chinese']
                       .map((String language) {
                     return ListTile(
-                      title: Text(language),
+                      title: Text(Provider.of<LanguageProvider>(context, listen: false).getLanguageFullName(language)), // フルネームを表示
                       trailing: _tempSelectedLanguage == language
                           ? const Icon(Icons.check, color: Colors.blue)
                           : null,
                       onTap: () {
                         setState(() {
-                          _tempSelectedLanguage = language;
+                          _tempSelectedLanguage = language;  // タップした言語をセット
                         });
                       },
                     );
@@ -157,38 +164,19 @@ class _MyHomePageState extends State<MyHomePage> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();  // ダイアログを閉じる
                   },
-                  child: const Text("Cancel"),
+                  child: Text(Provider.of<LanguageProvider>(context, listen: false).getLocalizedString('cancel')), // キャンセルボタン
                 ),
                 TextButton(
-                  onPressed: () async {
+                  onPressed: () {
                     if (_tempSelectedLanguage != Provider.of<LanguageProvider>(context, listen: false).selectedLanguage) {
                       Provider.of<LanguageProvider>(context, listen: false)
-                          .updateLanguage(_tempSelectedLanguage);
-                      if (menuItems.isNotEmpty) {
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (BuildContext context) {
-                            return const AlertDialog(
-                              content: Row(
-                                children: [
-                                  CircularProgressIndicator(),
-                                  SizedBox(width: 20),
-                                  Text("Loading..."),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                        await _updateLanguageForMenuItems();
-                        Navigator.of(context).pop();
-                      }
+                          .updateLanguage(_tempSelectedLanguage);  // 言語を更新
                     }
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();  // ダイアログを閉じる
                   },
-                  child: const Text("Confirm"),
+                  child: Text(Provider.of<LanguageProvider>(context, listen: false).getLocalizedString('confirm')), // 確認ボタン
                 ),
               ],
             );
