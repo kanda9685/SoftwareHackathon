@@ -11,6 +11,7 @@ from backend.modules.image_search import get_image
 from backend.modules.menu_description import transcribe_and_describe
 import time, os
 from fastapi.responses import JSONResponse
+from pathlib import Path
 
 app = FastAPI()
 
@@ -127,9 +128,23 @@ async def get_localimage(image_name: str):
 @app.post("/image_upload")
 async def upload_image(file: UploadFile = File(...), file_name: str = Form(...)):
     try:
-        # ファイルを保存するパスを設定
-        save_path = os.path.join(IMAGE_DIRECTORY, file_name)
-        print(save_path)
+        # 似た名前のフォルダを探す
+        similar_folders = [f for f in os.listdir(IMAGE_DIRECTORY) if file_name in f]
+        if similar_folders:
+            # 既存の似たフォルダに保存
+            target_folder = os.path.join(IMAGE_DIRECTORY, similar_folders[0])
+        else:
+            # 新しいフォルダを作成
+            target_folder = os.path.join(IMAGE_DIRECTORY, file_name)
+            Path(target_folder).mkdir(parents=True, exist_ok=True)
+        
+        # ファイル名が重複しないように連番を付与
+        counter = 1
+        save_path = os.path.join(target_folder, f"{file_name}_{counter}.jpg")
+        while os.path.exists(save_path):
+            counter += 1
+            save_path = os.path.join(target_folder, f"{file_name}_{counter}.jpg")
+
         # アップロードされたファイルを開いて保存
         with open(save_path, "wb") as buffer:
             buffer.write(await file.read())
