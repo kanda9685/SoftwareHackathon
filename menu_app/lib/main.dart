@@ -150,7 +150,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 width: double.maxFinite,
                 child: ListView(
                   shrinkWrap: true,
-                  children: <String>['English', 'Korean', 'Chinese']
+                  children: <String>['English', 'Korean', 'Chinese', 'Spanish', 'French']
                       .map((String language) {
                     return ListTile(
                       title: Text(Provider.of<LanguageProvider>(context, listen: false).getLanguageFullName(language)), // フルネームを表示

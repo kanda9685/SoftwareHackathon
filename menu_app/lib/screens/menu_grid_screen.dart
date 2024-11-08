@@ -140,11 +140,12 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                                   padding: const EdgeInsets.all(4.0),
                                   child: Column(
                                     children: [
+                                      SizedBox(height: 20), 
                                       AutoSizeText(
-                                        menuItem.menuJp,
+                                        menuItem.menuEn,
                                         style: const TextStyle(
                                           color: Colors.black87,
-                                          fontSize: 12,
+                                          fontSize: 18,
                                           decoration: TextDecoration.none,
                                         ),
                                         maxLines: 2,
@@ -153,10 +154,10 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                                         textAlign: TextAlign.center,
                                       ),
                                       AutoSizeText(
-                                        menuItem.menuEn,
+                                        menuItem.menuJp,
                                         style: const TextStyle(
                                           color: Colors.black87,
-                                          fontSize: 12,
+                                          fontSize: 14,
                                           decoration: TextDecoration.none,
                                         ),
                                         maxLines: 2,
@@ -287,7 +288,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
               width: double.maxFinite,
               child: ListView(
                 shrinkWrap: true,
-                children: <String>['English', 'Chinese', 'Korean']
+                children: <String>['English', 'Korean', 'Chinese', 'Spanish', 'French']
                     .map((String language) {
                   return ListTile(
                     title: Text(language),
@@ -359,7 +360,10 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
         final languageProvider = Provider.of<LanguageProvider>(context);
         return AlertDialog(
           title: Text(languageProvider.getLocalizedString('delete_all_menus')),
-          content: Text(languageProvider.getLocalizedString('delete_all_menus_confirmation')),
+          content: Text(languageProvider.getLocalizedString('delete_all_menus_confirmation'),
+          style: TextStyle(
+            fontSize: 16,
+          )),
           actions: [
             TextButton(
               onPressed: () {
