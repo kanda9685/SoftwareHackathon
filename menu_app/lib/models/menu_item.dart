@@ -5,7 +5,7 @@ class MenuItem {
   List<String>? imageUrls; // 画像URLのリスト (nullを許容)
   int quantity;                  // 選択した個数
   String selectedLanguage; // 言語設定
-  String shop_name; //店名
+  String shopName; //店名
 
   // コンストラクタ
   MenuItem({
@@ -15,7 +15,7 @@ class MenuItem {
     this.imageUrls,               // nullを許容
     this.quantity = 0,            // 初期値は0（選択なし）
     this.selectedLanguage = 'English', 
-    this.shop_name='???',
+    this.shopName='',
   });
 
   // JSONからMenuItemを生成するファクトリーメソッド
@@ -26,7 +26,7 @@ class MenuItem {
       description: json['description'] as String,
       imageUrls: (json['image_urls'] as List<dynamic>?)?.cast<String>(), // 複数画像に対応
       quantity: json['quantity'] ?? 0,                                  // quantityをJSONから取得（デフォルトは0）
-      shop_name: json['shop_name'] as String? ?? '', // nullの場合は空文字
+      shopName: json['shop_name'] as String? ?? '', // nullの場合は空文字
     );
   }
 
@@ -38,7 +38,7 @@ class MenuItem {
       'description': description,
       'image_urls': imageUrls,
       'quantity': quantity,
-      'shop_name' :shop_name,
+      'shop_name' :shopName,
     };
   }
 
@@ -50,7 +50,7 @@ class MenuItem {
       'description': description,
       'imageUrls': imageUrls,  // 画像URLリスト（nullも許容）
       'quantity': quantity,
-      'shop_name' :shop_name,
+      'shop_name' :shopName,
     };
   }
 
@@ -62,7 +62,7 @@ class MenuItem {
       description: map['description'] as String,
       imageUrls: (map['imageUrls'] as List<dynamic>?)?.cast<String>(),  // 画像URLリスト（nullも許容）
       quantity: map['quantity'] as int? ?? 0,
-      shop_name: map['shop_name'] as String? ?? '',
+      shopName: map['shop_name'] as String? ?? '',
     );
   }
 }
