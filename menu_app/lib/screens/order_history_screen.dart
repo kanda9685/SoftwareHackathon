@@ -101,7 +101,7 @@ body: orderHistory.isEmpty
             margin: const EdgeInsets.all(8.0),
             child: ListTile(
               title: Text(
-                "${languageProvider.getLocalizedString('order')} #${index + 1}: ${orderHistory[index][0].shop_name}"
+                "${languageProvider.getLocalizedString('order')} #${index + 1}: ${orderHistory[index][0].shopName}"
               ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
