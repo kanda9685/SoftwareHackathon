@@ -33,12 +33,15 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
         title: widget.menuItems.isEmpty ? Text(languageProvider.getLocalizedString('_menu')) 
                                         : SingleChildScrollView(
                                             scrollDirection: Axis.horizontal,
-                                                      child:Text(widget.menuItems[0].shop_name+languageProvider.getLocalizedString('menu'))),
+                                                      child:Text(widget.menuItems[0].shopName+languageProvider.getLocalizedString('menu'))),
         actions: [
           // 言語設定ボタンの追加
-          IconButton(
-            icon: const Icon(Icons.language, color: Colors.white),
-            onPressed: () => _showLanguageDialog(context), // 言語選択ダイアログを表示
+          TextButton(
+            onPressed: () => _showLanguageDialog(context),
+            child: Text(
+              'Lang: ${Provider.of<LanguageProvider>(context).getLanguageShortCode()}', // Langを適用
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
           // ゴミ箱アイコンの追加
           IconButton(
@@ -143,23 +146,12 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                                   padding: const EdgeInsets.all(4.0),
                                   child: Column(
                                     children: [
-                                      AutoSizeText(
-                                        menuItem.menuJp,
-                                        style: const TextStyle(
-                                          color: Colors.black87,
-                                          fontSize: 12,
-                                          decoration: TextDecoration.none,
-                                        ),
-                                        maxLines: 2,
-                                        minFontSize: 6,
-                                        overflow: TextOverflow.ellipsis,
-                                        textAlign: TextAlign.center,
-                                      ),
+                                      const SizedBox(height: 20), 
                                       AutoSizeText(
                                         menuItem.menuEn,
                                         style: const TextStyle(
                                           color: Colors.black87,
-                                          fontSize: 12,
+                                          fontSize: 18,
                                           decoration: TextDecoration.none,
                                         ),
                                         maxLines: 2,
@@ -167,7 +159,18 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                                         overflow: TextOverflow.ellipsis,
                                         textAlign: TextAlign.center,
                                       ),
-
+                                      AutoSizeText(
+                                        menuItem.menuJp,
+                                        style: const TextStyle(
+                                          color: Colors.black87,
+                                          fontSize: 14,
+                                          decoration: TextDecoration.none,
+                                        ),
+                                        maxLines: 2,
+                                        minFontSize: 6,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -617,23 +620,23 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                             ),
                           ],
                         ),
-                        Row(
-                        // 画像アップロードボタン
-                        children: [
-                          ElevatedButton(
-                            onPressed: isUploading ? null :() async {
-                              final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-                              if (pickedFile != null) {
-                                _selectedImage = File(pickedFile.path);
-                                await _uploadImage(_selectedImage!);
-                                setState(() {});  // 状態を更新してUIを再描画
-                              }
-                            },
-                           child: isUploading 
-                                ? const CircularProgressIndicator()  // アップロード中はインジケーター表示
-                                : Text(Provider.of<LanguageProvider>(context).getLocalizedString('upload_image')),
-                          ),
-                          const SizedBox(width: 30),
+                        // Row(
+                        // // 画像アップロードボタン
+                        // children: [
+                        //   ElevatedButton(
+                        //     onPressed: isUploading ? null :() async {
+                        //       final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+                        //       if (pickedFile != null) {
+                        //         _selectedImage = File(pickedFile.path);
+                        //         await _uploadImage(_selectedImage!);
+                        //         setState(() {});  // 状態を更新してUIを再描画
+                        //       }
+                        //     },
+                        //    child: isUploading 
+                        //         ? const CircularProgressIndicator()  // アップロード中はインジケーター表示
+                        //         : Text(Provider.of<LanguageProvider>(context).getLocalizedString('upload_image')),
+                        //   ),
+                        //   const SizedBox(width: 30),
                           // 追加ボタン
                           ElevatedButton(
                             onPressed: () {
@@ -647,8 +650,9 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                               Navigator.of(context).pop();
                             },
                             child: Text(Provider.of<LanguageProvider>(context).getLocalizedString('confirm')),
-                          )],
-                        )
+                          )
+                          // ],
+                        // )
                       ],
                     ),
                   ),

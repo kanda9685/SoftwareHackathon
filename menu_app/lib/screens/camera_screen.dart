@@ -218,7 +218,7 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
     String selectedLanguage = Provider.of<LanguageProvider>(context, listen: false).selectedLanguage;
 
     final file = await rotateAndSaveImage(File(imagePath));
-    final uploadUrl = 'http://172.16.0.178:8000/process_menus';
+    final uploadUrl = 'http://192.168.10.111:8000/process_menus';
 
     showDialog(
       context: context,
