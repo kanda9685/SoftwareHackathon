@@ -136,6 +136,46 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  
+  Future<void> selectDeleteMenu(BuildContext context)async{
+    // メニューリストを削除する確認ダイアログ
+    print("llll");
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        print("hhhhh");
+        final languageProvider = Provider.of<LanguageProvider>(context);
+        return AlertDialog(
+          title: Text(languageProvider.getLocalizedString('delete_all_menus')),
+          content: Text(languageProvider.getLocalizedString('delete_all_menus_forlang'),
+          style: TextStyle(
+            fontSize: 16,
+          )),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              },
+              child: Text(languageProvider.getLocalizedString('dontdelete')),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  menuItems.clear(); // メニューリストをクリア
+                });
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              },
+              child: Text(languageProvider.getLocalizedString('delete')),
+            ),
+          ],
+        );
+      },
+    );
+  }
+   
+
   // 言語選択ダイアログの表示
   void _showLanguageDialog(BuildContext context) {
     String _tempSelectedLanguage = Provider.of<LanguageProvider>(context, listen: false).selectedLanguage;
@@ -176,10 +216,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 TextButton(
                   onPressed: () {
                     if (_tempSelectedLanguage != Provider.of<LanguageProvider>(context, listen: false).selectedLanguage) {
-                      Provider.of<LanguageProvider>(context, listen: false)
-                          .updateLanguage(_tempSelectedLanguage);  // 言語を更新
+
+                      Provider.of<LanguageProvider>(context, listen: false).updateLanguage(_tempSelectedLanguage);  // 言語を更新
+                      
+                      if(menuItems.isNotEmpty){
+                        selectDeleteMenu(context);
+                      }
+                    }else{
+                      Navigator.of(context).pop();
                     }
-                    Navigator.of(context).pop();  // ダイアログを閉じる
+                    
                   },
                   child: Text(Provider.of<LanguageProvider>(context, listen: false).getLocalizedString('confirm')), // 確認ボタン
                 ),
