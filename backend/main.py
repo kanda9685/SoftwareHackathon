@@ -76,9 +76,9 @@ async def process_menus_endpoint(lat: str=Form(...), lng: str=Form(...), file: U
             image_url = image_urls[i]  # 非同期で取得した画像URL
             
             image_urls_list = []
-            image_url2 = f"{MAIN_URL}/uploaded_images/{item['Menu_jp']}/{item['Menu_jp']}_1.jpg"
-            image_url3 = f"{MAIN_URL}/uploaded_images/{item['Menu_jp']}/{item['Menu_jp']}_2.jpg"
-            image_url4 = f"{MAIN_URL}/uploaded_images/{item['Menu_jp']}/{item['Menu_jp']}_3.jpg"
+            image_url2 = f"{MAIN_URL}/uploaded_images/menu1/{item['Menu_jp']}/{item['Menu_jp']}_1.jpg"
+            image_url3 = f"{MAIN_URL}/uploaded_images/menu1/{item['Menu_jp']}/{item['Menu_jp']}_2.jpg"
+            image_url4 = f"{MAIN_URL}/uploaded_images/menu1/{item['Menu_jp']}/{item['Menu_jp']}_3.jpg"
             image_urls_list.append(image_url)
             image_urls_list.append(image_url2)
             image_urls_list.append(image_url3)
@@ -142,10 +142,10 @@ async def translate_menus_endpoint(request: Request):
 IMAGE_DIRECTORY = "C:\\Users\\meron\\Desktop\\SoftwareHackathon\\backend\\uploaded_images"
 
 
-@app.get("/uploaded_images/{folder_name}/{image_name}")
-async def get_localimage(image_name: str, folder_name: str):
+@app.get("/uploaded_images/{shop_name}/{folder_name}/{image_name}")
+async def get_localimage(image_name: str, folder_name: str, shop_name: str):
 
-    image_path = os.path.join(IMAGE_DIRECTORY,folder_name,image_name)
+    image_path = os.path.join(IMAGE_DIRECTORY,shop_name,folder_name,image_name)
 
     if os.path.exists(image_path):
         return FileResponse(image_path)
@@ -204,7 +204,7 @@ def get_nearby_restaurants(lat: float, lng: float):
                     "latitude": lat,
                     "longitude": lng
                 },
-                "radius": 500.0
+                "radius": 100.0
             }
         }
     }
