@@ -116,6 +116,8 @@ class LanguageProvider with ChangeNotifier {
     'Sorry.':'Sorry.',
     'Faildish':'Failed to find any dishes. Please try again.',
     'Preview' : 'Preview',
+    'dontdelete': 'Not delete',
+    'delete_all_menus_forlang': 'Would you like to delete the menu exists already?',
   };
 
   // 韓国語の文字列
@@ -151,6 +153,8 @@ class LanguageProvider with ChangeNotifier {
     'Sorry.':'죄송합니다.',
     'Faildish':'음식을 찾을 수 없습니다. 다시 시도해 주세요.',
     'Preview' : '미리보기',
+    'dontdelete': '삭제하지 않음',
+    'delete_all_menus_forlang': '이미 존재하는 메뉴를 삭제하시겠습니까?',
   };
 
   // 中国語の文字列
@@ -186,6 +190,8 @@ class LanguageProvider with ChangeNotifier {
     'Sorry.':'对不起。',
     'Faildish':'未能找到任何菜肴，请再试一次。',
     'Preview' : '预览',
+    'dontdelete': '不删除',
+    'delete_all_menus_forlang': '您想删除已经存在的菜单吗？',
   };
 
   // スペイン語の文字列
@@ -221,6 +227,8 @@ class LanguageProvider with ChangeNotifier {
     'Sorry.':'Lo siento.',
     'Faildish':'No se encontraron platos. Por favor, inténtalo de nuevo.',
     'Preview' : 'Vista previa',
+    'dontdelete': 'No eliminar',
+    'delete_all_menus_forlang': '¿Le gustaría eliminar el menú que ya existe?',
   };
 
   // フランス語の文字列
@@ -256,5 +264,7 @@ class LanguageProvider with ChangeNotifier {
     'Sorry.':'Désolé',
     'Faildish':'Impossible de trouver des plats. Veuillez réessayer.',
     'Preview' : 'Aperçu',
+    'dontdelete': 'Ne pas supprimer',
+    'delete_all_menus_forlang': 'Souhaitez-vous supprimer le menu qui existe déjà ?',
   };
 }
