@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:menu_app/main.dart';
 import 'package:menu_app/models/menu_item.dart';
+import 'package:menu_app/screens/order_history_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:auto_size_text/auto_size_text.dart'; // Make sure this import is added
 import 'package:provider/provider.dart';
-import 'package:menu_app/providers/language_provider.dart'; // Import the LanguageProvider
+import 'package:menu_app/providers/language_provider.dart';
+import 'package:menu_app/providers/menu_items_provider.dart';
+import 'package:menu_app/providers/camera_provider.dart'; 
 
 class OrderScreen extends StatelessWidget {
   final List<MenuItem> selectedItems;
@@ -108,8 +112,19 @@ class OrderScreen extends StatelessWidget {
                 onPressed: () async {
                   await _saveOrderHistory();  // Save order history
 
+                  Provider.of<MenuItemsProvider>(context, listen: false).resetQuantities();
+
                   // Close current screen and go back
                   Navigator.pop(context);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MyHomePage(
+                        camera: Provider.of<CameraProvider>(context).camera,
+                        selectedIndex: 2,
+                      ),
+                    ),
+                  );
                 },
                 icon: Icon(Icons.check_circle, size: 24, color: Colors.white),
                 label: Text(languageProvider.getLocalizedString('order_completed'), style: TextStyle(fontSize: 16, color: Colors.white)), // Localized string
