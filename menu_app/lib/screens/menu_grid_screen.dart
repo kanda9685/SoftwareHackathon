@@ -25,250 +25,329 @@ class MenuGridScreen extends StatefulWidget {
   _MenuGridScreenState createState() => _MenuGridScreenState();
 }
 
-class _MenuGridScreenState extends State<MenuGridScreen> {
+class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStateMixin {
+  late TabController _tabController;
+  late List<String> _categories;
+  late List<MenuItem> _filteredItems;
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredItems = widget.menuItems; 
+    _initializeTabController();
+    if (_categories.isNotEmpty) {
+      _filterItemsByCategory(_categories[0]);
+    }
+  }
+
+  // タブを初期化する関数
+  void _initializeTabController() {
+    print(widget.menuItems);
+    _categories = widget.menuItems
+        .map((item) => item.category)
+        .toSet()
+        .toList();
+
+    // カテゴリが存在する場合のみTabControllerを初期化する
+    if (_categories.isNotEmpty) {
+      _tabController = TabController(length: _categories.length, vsync: this);
+    } else {
+      // カテゴリが空の場合、デフォルトで1つのタブを設定
+      _categories = ['Default Category'];  // 例: 'Default Category'
+      _tabController = TabController(length: 1, vsync: this);
+    }
+  }
+
+  // カテゴリを変更してフィルタリングする関数
+  void _filterItemsByCategory(String category) {
+    setState(() {
+      _filteredItems = widget.menuItems.where((item) => item.category == category).toList();
+    });
+  }
+
+  // カテゴリリストが変更されたときにTabControllerを更新
+  void updateCategories() {
+    setState(() {
+      _tabController.dispose();
+      _initializeTabController();  // TabControllerを再初期化
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-  final languageProvider = Provider.of<LanguageProvider>(context);
-  List<MenuItem> menuItems = [];
+    final languageProvider = Provider.of<LanguageProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
         title: widget.menuItems.isEmpty || widget.menuItems[0].shopName.isEmpty
-          ? Text(languageProvider.getLocalizedString('_menu'))  // shopNameが空の場合、メニュー表示
-          : SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: languageProvider.getMenuTitleOrder() == 'front'
-                  ? Text(widget.menuItems[0].shopName + languageProvider.getLocalizedString('menu'))
-                  : Text(languageProvider.getLocalizedString('menu') + widget.menuItems[0].shopName),
-            ),
+            ? Text(languageProvider.getLocalizedString('_menu'))
+            : SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: languageProvider.getMenuTitleOrder() == 'front'
+                    ? Text(widget.menuItems[0].shopName + languageProvider.getLocalizedString('menu'))
+                    : Text(languageProvider.getLocalizedString('menu') + widget.menuItems[0].shopName),
+              ),
         actions: [
-          // 言語設定ボタンの追加
           TextButton(
             onPressed: () => _showLanguageDialog(context),
             child: Text(
-              'Lang: ${Provider.of<LanguageProvider>(context).getLanguageShortCode()}', // Langを適用
+              'Lang: ${Provider.of<LanguageProvider>(context).getLanguageShortCode()}',
               style: const TextStyle(color: Colors.white),
             ),
           ),
-          // ゴミ箱アイコンの追加
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.white),
             onPressed: () {
-              _showDeleteConfirmationDialog(context); // ゴミ箱アイコンがタップされたときに確認ダイアログを表示
+              _showDeleteConfirmationDialog(context);
             },
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(1.0), // 横線の高さを指定
+          child: Container(
+            color: Colors.grey, // 横線の色を指定
+            height: 0.5, // 横線の太さを指定
+          ),
+        ),
       ),
       body: widget.menuItems.isEmpty
-        ? Center(child: Text(languageProvider.getLocalizedString('no_menu')))
-        : Column(
-          children: [
-            // メニューアイテムのグリッド表示
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.8,
-                ),
-                itemCount: widget.menuItems.length,
-                itemBuilder: (context, index) {
-                  final menuItem = widget.menuItems[index];
-
-                  return GestureDetector(
-                    onTap: () {
-                      _showMenuItemDialog(context, menuItem, (updatedMenuItem) {
-                        setState(() {
-                          // 親ウィジェットの状態を更新
-                          widget.menuItems[index] = updatedMenuItem;
-                        });
-                      });
+          ? Center(child: Text('No menu available'))
+          : Column(
+              children: [
+                // タブバーを追加
+                Container(
+                  alignment: Alignment.centerLeft,
+                  child: TabBar(
+                    controller: _tabController,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
+                    onTap: (index) {
+                      _filterItemsByCategory(_categories[index]); // タブをタップした際にカテゴリをフィルタリング
                     },
-                    child: Container(
-                      margin: const EdgeInsets.all(4.0),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200], // 背景色を常に灰色に
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.2),
-                            spreadRadius: 2,
-                            blurRadius: 4,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Stack(
-                        children: [
-                          // メニューアイテムの内容部分
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              // 画像部分 (上側は丸く、下側は直線)
-                              Container(
-                                width: double.infinity,
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(10),
-                                    topRight: Radius.circular(10),
-                                  ),
+                    tabs: _categories
+                        .map((category) => Tab(
+                              child: Text(
+                                category,
+                                style: TextStyle(
+                                  fontSize: 16.0, // 文字の大きさを変更（必要に応じて調整）
                                 ),
-                                child: menuItem.base64Image.isNotEmpty
-                                  ? ClipRRect(
+                              ),
+                            ))
+                        .toList(),
+                    padding: EdgeInsets.zero, // パディングをゼロにして余白をなくす
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  ),
+                ),
+                // タブの内容を表示する部分
+                Expanded(
+                  child: GridView.builder(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.8,
+                    ),
+                    itemCount: _filteredItems.length,
+                    itemBuilder: (context, index) {
+                      final menuItem = _filteredItems[index];
+                      return GestureDetector(
+                        onTap: () {
+                          _showMenuItemDialog(context, menuItem, (updatedMenuItem) {
+                            setState(() {
+                              // 親ウィジェットの状態を更新
+                              widget.menuItems[index] = updatedMenuItem;
+                            });
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.all(4.0),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200], // 背景色を常に灰色に
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.2),
+                                spreadRadius: 2,
+                                blurRadius: 4,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Container(
+                                    width: double.infinity,
+                                    height: 120,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
                                       borderRadius: const BorderRadius.only(
                                         topLeft: Radius.circular(10),
                                         topRight: Radius.circular(10),
                                       ),
-                                      child: Image.memory(
-                                        base64Decode(menuItem.base64Image), // base64Imageをデコードして表示
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return const Center(
-                                            child: Icon(
-                                              Icons.broken_image,
-                                              color: Colors.grey,
-                                              size: 30,
+                                    ),
+                                    child: menuItem.base64Image.isNotEmpty
+                                        ? ClipRRect(
+                                            borderRadius: const BorderRadius.only(
+                                              topLeft: Radius.circular(10),
+                                              topRight: Radius.circular(10),
                                             ),
-                                          );
-                                        },
-                                      ),
-                                    )
-                                  : (menuItem.imageUrls != null && menuItem.imageUrls!.isNotEmpty
-                                      ? ClipRRect(
-                                          borderRadius: const BorderRadius.only(
-                                            topLeft: Radius.circular(10),
-                                            topRight: Radius.circular(10),
-                                          ),
-                                          child: Image.network(
-                                            menuItem.imageUrls![0], // 通常のURL
-                                            fit: BoxFit.cover,
-                                            loadingBuilder: (context, child, loadingProgress) {
-                                              if (loadingProgress == null) {
-                                                return child;
-                                              }
-                                              return const Center(child: CircularProgressIndicator());
-                                            },
-                                            errorBuilder: (context, error, stackTrace) {
-                                              return const Center(
-                                                child: Icon(
-                                                  Icons.broken_image,
-                                                  color: Colors.grey,
-                                                  size: 30,
+                                            child: Image.memory(
+                                              base64Decode(menuItem.base64Image),
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) {
+                                                return const Center(
+                                                  child: Icon(
+                                                    Icons.broken_image,
+                                                    color: Colors.grey,
+                                                    size: 30,
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          )
+                                        : (menuItem.imageUrls != null && menuItem.imageUrls!.isNotEmpty
+                                            ? ClipRRect(
+                                                borderRadius: const BorderRadius.only(
+                                                  topLeft: Radius.circular(10),
+                                                  topRight: Radius.circular(10),
                                                 ),
-                                              );
-                                            },
+                                                child: Image.network(
+                                                  menuItem.imageUrls![0], 
+                                                  fit: BoxFit.cover,
+                                                  loadingBuilder: (context, child, loadingProgress) {
+                                                    if (loadingProgress == null) {
+                                                      return child;
+                                                    }
+                                                    return const Center(child: CircularProgressIndicator());
+                                                  },
+                                                  errorBuilder: (context, error, stackTrace) {
+                                                    return const Center(
+                                                      child: Icon(
+                                                        Icons.broken_image,
+                                                        color: Colors.grey,
+                                                        size: 30,
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              )
+                                            : const Icon(
+                                                Icons.image,
+                                                color: Colors.grey,
+                                                size: 30,
+                                              )),
+                                  ),
+                                  Expanded(
+                                    flex: 1,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Column(
+                                        children: [
+                                          const SizedBox(height: 20),
+                                          AutoSizeText(
+                                            menuItem.menuEn,
+                                            style: const TextStyle(
+                                              color: Colors.black87,
+                                              fontSize: 18,
+                                              decoration: TextDecoration.none,
+                                            ),
+                                            maxLines: 2,
+                                            minFontSize: 6,
+                                            overflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.center,
                                           ),
-                                        )
-                                      : const Icon(
-                                          Icons.image,
-                                          color: Colors.grey,
-                                          size: 30,
-                                        )),
+                                          AutoSizeText(
+                                            menuItem.menuJp,
+                                            style: const TextStyle(
+                                              color: Colors.black87,
+                                              fontSize: 14,
+                                              decoration: TextDecoration.none,
+                                            ),
+                                            maxLines: 2,
+                                            minFontSize: 6,
+                                            overflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              // メニューのテキスト部分
-                              Expanded(
-                                flex: 1,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Column(
-                                    children: [
-                                      const SizedBox(height: 20), 
-                                      AutoSizeText(
-                                        menuItem.menuEn,
-                                        style: const TextStyle(
-                                          color: Colors.black87,
-                                          fontSize: 18,
-                                          decoration: TextDecoration.none,
-                                        ),
-                                        maxLines: 2,
-                                        minFontSize: 6,
-                                        overflow: TextOverflow.ellipsis,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      AutoSizeText(
-                                        menuItem.menuJp,
-                                        style: const TextStyle(
-                                          color: Colors.black87,
-                                          fontSize: 14,
-                                          decoration: TextDecoration.none,
-                                        ),
-                                        maxLines: 2,
-                                        minFontSize: 6,
-                                        overflow: TextOverflow.ellipsis,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
+                              Positioned(
+                                right: 8,
+                                bottom: 8,
+                                child: Container(
+                                  padding: const EdgeInsets.all(6.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    '×${menuItem.quantity}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                          // 右下に個数を表示
-                          Positioned(
-                            right: 8,
-                            bottom: 8,
-                            child: Container(
-                              padding: const EdgeInsets.all(6.0),
-                              decoration: BoxDecoration(
-                                color: Colors.green,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Text(
-                                '×${menuItem.quantity}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            // 注文ボタン
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  // 注文画面に遷移
-                  List<MenuItem> selectedItems = widget.menuItems.where((item) => item.quantity > 0).toList();
-                  if (selectedItems.isNotEmpty) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          // `MenuItemsProvider` を使って `OrderScreen` をラップ
-                          return ChangeNotifierProvider.value(
-                            value: Provider.of<MenuItemsProvider>(context, listen: false), // 適切なプロバイダーのインスタンスを取得
-                            child: OrderScreen(
-                              selectedItems: selectedItems
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  }
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.checklist, size: 20), // アイコンの追加
-                    const SizedBox(width: 8), // アイコンとテキストの間にスペースを追加
-                    Text(languageProvider.getLocalizedString('order')),
-                  ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
+                ElevatedButton(
+                  onPressed: () {
+                    List<MenuItem> selectedItems = widget.menuItems.where((item) => item.quantity > 0).toList();
+                    if (selectedItems.isNotEmpty) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return ChangeNotifierProvider.value(
+                              value: Provider.of<MenuItemsProvider>(context, listen: false),
+                              child: OrderScreen(selectedItems: selectedItems),
+                            );
+                          },
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0), // ボタン内のパディングを調整
+                      minimumSize: Size(200, 50), // 最小サイズを指定（幅200、高さ50）
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8), // 角を丸くする
+                      ),
+                    side: BorderSide(
+                      color: Colors.grey, // 枠線の色を指定
+                      width: 0.5, // 枠線の太さ
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.checklist, size: 20),
+                      const SizedBox(width: 8),
+                      Text(languageProvider.getLocalizedString('order')),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      );
-    }
+    );
+  }
 
   Future<void> _updateLanguageForMenuItems() async {
     String selectedLanguage = Provider.of<LanguageProvider>(context, listen: false).selectedLanguage;
@@ -302,6 +381,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
             widget.menuItems[i].menuEn = results[i]['menu_en']; // 翻訳されたメニュー
             widget.menuItems[i].description = results[i]['description']; // 翻訳された説明
             widget.menuItems[i].selectedLanguage = selectedLanguage; // 言語設定を更新
+            widget.menuItems[i].category = results[i]['category'];
           }
         });
       } else {
@@ -378,6 +458,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                         },
                       );
                       await _updateLanguageForMenuItems();
+                      updateCategories();
                       Navigator.of(context).pop(); 
                     }
                   }
@@ -756,44 +837,58 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                     ),
                     const SizedBox(height: 20),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,  // 水平中央揃え
-                      children: [
-                        // AutoSizeText: メニュー名
-                        AutoSizeText(
-                          menuItem.menuEn,
-                          style: const TextStyle(
-                            color: Colors.blue,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-
-                          decoration: TextDecoration.underline, 
-                          decorationColor: Colors.blue,
-                          decorationThickness: 1.0,
-                          ),
-                          maxLines: 2,
-                          minFontSize: 14,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(width: 5),  // テキストとアイコンの間に余白を追加
-                        // GestureDetector: 検索アイコン
-                        GestureDetector(
+                    mainAxisAlignment: MainAxisAlignment.center,  // 水平中央揃え
+                    children: [
+                      // MaterialとInkWellでラップ
+                      Material(
+                        color: Colors.transparent,  // 背景色を透明にして、タップ時のエフェクトのみ表示
+                        child: InkWell(
                           onTap: () async {
-                            final url = 'https://www.google.com/search?q=${Uri.encodeComponent(menuItem.menuEn)}';
-                            if (await canLaunch(url)) {
-                              await launch(url);
+                            final Uri url = Uri.parse('https://www.google.com/search?q=${Uri.encodeComponent(menuItem.menuEn)}');
+                            if (await canLaunchUrl(url)) {
+                              await launchUrl(url);
                             } else {
                               throw 'Could not launch $url';
                             }
                           },
-                          child: Icon(
-                            Icons.search,  // 検索アイコン
-                            color: Colors.blue,  // アイコンの色
-                            size: 24,  // アイコンのサイズ
+                          highlightColor: Colors.blue.withOpacity(0.1), // タップ時に背景色が変わる
+                          splashColor: Colors.blue.withOpacity(0.2),    // タップ時の波紋効果
+                          child: AutoSizeText(
+                            menuItem.menuEn,
+                            style: const TextStyle(
+                              color: Colors.blue,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline,
+                              decorationColor: Colors.blue,
+                              decorationThickness: 1.0,
+                            ),
+                            maxLines: 2,
+                            minFontSize: 14,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 5),  // テキストとアイコンの間に余白を追加
+                      // GestureDetector: 検索アイコン
+                      GestureDetector(
+                        onTap: () async {
+                          final Uri url = Uri.parse('https://www.google.com/search?q=${Uri.encodeComponent(menuItem.menuEn)}');
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url);
+                          } else {
+                            throw 'Could not launch $url';
+                          }
+                        },
+                        child: Icon(
+                          Icons.search,  // 検索アイコン
+                          color: Colors.blue,  // アイコンの色
+                          size: 24,  // アイコンのサイズ
+                        ),
+                      ),
+                    ],
+                  ),
                     // const SizedBox(height: 10),
                     // AutoSizeText(
                     //   menuItem.menuJp,
@@ -854,6 +949,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                           description: menuItem.description,
                           imageUrls: menuItem.imageUrls,
                           quantity: tempQuantity,
+                          category: menuItem.category,
                         ));
                         Navigator.of(context).pop();
                       },

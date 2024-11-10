@@ -112,34 +112,50 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ],
+          bottom: PreferredSize(
+            preferredSize: Size.fromHeight(1.0), // 横線の高さを指定
+            child: Container(
+              color: Colors.grey, // 横線の色を指定
+              height: 0.5, // 横線の太さを指定
+            ),
+          ),
         )
         : null,
       body: _screens[_selectedIndex], // 選択された画面を表示
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.camera),
-            label: Provider.of<LanguageProvider>(context).getLocalizedString('camera'), // 言語に基づくボタンラベル
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            color: Colors.grey, // 横線の色
+            height: 0.5, // 横線の高さ（太さ）
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.grid_on),
-            label: Provider.of<LanguageProvider>(context).getLocalizedString('menu items'), // 言語に基づくボタンラベル
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: Provider.of<LanguageProvider>(context).getLocalizedString('order_history'), // 言語に基づくボタンラベル
+          BottomNavigationBar(
+            items: [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.camera),
+                label: Provider.of<LanguageProvider>(context).getLocalizedString('camera'), // 言語に基づくボタンラベル
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.grid_on),
+                label: Provider.of<LanguageProvider>(context).getLocalizedString('menu items'), // 言語に基づくボタンラベル
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.history),
+                label: Provider.of<LanguageProvider>(context).getLocalizedString('order_history'), // 言語に基づくボタンラベル
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            onTap: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
+            selectedItemColor: Colors.white,  // 選択時のアイコン色を白に設定
+            unselectedItemColor: Colors.grey, // 非選択時のアイコン色をグレーに設定
+            backgroundColor: Colors.black, // 背景色を黒に設定（必要に応じて変更）
           ),
         ],
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        selectedItemColor: Colors.white,  // 選択時のアイコン色を白に設定
-        unselectedItemColor: Colors.grey, // 非選択時のアイコン色をグレーに設定
-        backgroundColor: Colors.black, // 背景色を黒に設定（必要に応じて変更）
-      ),
+      )
     );
   }
 

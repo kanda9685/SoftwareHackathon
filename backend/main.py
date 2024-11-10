@@ -91,7 +91,8 @@ async def process_menus_endpoint(lat: str=Form(...), lng: str=Form(...), file: U
                 "menu_en": item['Menu_en'],
                 "description": item['Description'],
                 "image_urls": image_urls_list,
-                'shop_name':shop_name
+                'shop_name': shop_name,
+                "category": item["Category"]
             })
         
         return {"results": results, "time": time.time() - start_time}
@@ -130,7 +131,8 @@ async def translate_menus_endpoint(request: Request):
             results.append({
                 "menu_item": item['Menu_jp'],
                 "menu_en": item['Menu_en'],
-                "description": item['Description']
+                "description": item['Description'],
+                "category": item['Category']
             })
             
         return JSONResponse(content={"results": results}, media_type="application/json; charset=UTF-8")

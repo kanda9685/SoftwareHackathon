@@ -76,7 +76,7 @@ class LanguageProvider with ChangeNotifier {
       case 'Chinese':
         return 'back';  // 「menu」が後ろ
       case 'Spanish':
-        return 'back'; // 店名が前
+        return 'front'; // 店名が前
       case 'French':
         return 'back';  // 「menu」が後ろ
       default:
