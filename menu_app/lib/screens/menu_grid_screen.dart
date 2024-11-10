@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';  // Providerのインポート
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:menu_app/providers/language_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // 翻訳のエンドポイントを変更する必要がある
 
@@ -30,15 +31,22 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: widget.menuItems.isEmpty ? Text(languageProvider.getLocalizedString('_menu')) 
-                                        : SingleChildScrollView(
-                                            scrollDirection: Axis.horizontal,
-                                                      child:Text(widget.menuItems[0].shopName+languageProvider.getLocalizedString('menu'))),
+        title: widget.menuItems.isEmpty || widget.menuItems[0].shopName.isEmpty
+          ? Text(languageProvider.getLocalizedString('_menu'))  // shopNameが空の場合、メニュー表示
+          : SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: languageProvider.getMenuTitleOrder() == 'front'
+                  ? Text(widget.menuItems[0].shopName + languageProvider.getLocalizedString('menu'))
+                  : Text(languageProvider.getLocalizedString('menu') + widget.menuItems[0].shopName),
+            ),
         actions: [
           // 言語設定ボタンの追加
-          IconButton(
-            icon: const Icon(Icons.language, color: Colors.white),
-            onPressed: () => _showLanguageDialog(context), // 言語選択ダイアログを表示
+          TextButton(
+            onPressed: () => _showLanguageDialog(context),
+            child: Text(
+              'Lang: ${Provider.of<LanguageProvider>(context).getLanguageShortCode()}', // Langを適用
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
           // ゴミ箱アイコンの追加
           IconButton(
@@ -104,37 +112,57 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                                     topRight: Radius.circular(10),
                                   ),
                                 ),
-                                child: menuItem.imageUrls != null && menuItem.imageUrls!.isNotEmpty
-                                    ? ClipRRect(
-                                        borderRadius: const BorderRadius.only(
-                                          topLeft: Radius.circular(10),
-                                          topRight: Radius.circular(10),
-                                        ),
-                                        child: Image.network(
-                                          menuItem.imageUrls![0],
-                                          fit: BoxFit.cover,
-                                          loadingBuilder: (context, child, loadingProgress) {
-                                            if (loadingProgress == null) {
-                                              return child;
-                                            }
-                                            return const Center(child: CircularProgressIndicator());
-                                          },
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return const Center(
-                                              child: Icon(
-                                                Icons.broken_image,
-                                                color: Colors.grey,
-                                                size: 30,
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      )
-                                    : const Icon(
-                                        Icons.image,
-                                        color: Colors.grey,
-                                        size: 30,
+                                child: menuItem.base64Image.isNotEmpty
+                                  ? ClipRRect(
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(10),
+                                        topRight: Radius.circular(10),
                                       ),
+                                      child: Image.memory(
+                                        base64Decode(menuItem.base64Image), // base64Imageをデコードして表示
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return const Center(
+                                            child: Icon(
+                                              Icons.broken_image,
+                                              color: Colors.grey,
+                                              size: 30,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    )
+                                  : (menuItem.imageUrls != null && menuItem.imageUrls!.isNotEmpty
+                                      ? ClipRRect(
+                                          borderRadius: const BorderRadius.only(
+                                            topLeft: Radius.circular(10),
+                                            topRight: Radius.circular(10),
+                                          ),
+                                          child: Image.network(
+                                            menuItem.imageUrls![0], // 通常のURL
+                                            fit: BoxFit.cover,
+                                            loadingBuilder: (context, child, loadingProgress) {
+                                              if (loadingProgress == null) {
+                                                return child;
+                                              }
+                                              return const Center(child: CircularProgressIndicator());
+                                            },
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return const Center(
+                                                child: Icon(
+                                                  Icons.broken_image,
+                                                  color: Colors.grey,
+                                                  size: 30,
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        )
+                                      : const Icon(
+                                          Icons.image,
+                                          color: Colors.grey,
+                                          size: 30,
+                                        )),
                               ),
                               // メニューのテキスト部分
                               Expanded(
@@ -143,23 +171,12 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                                   padding: const EdgeInsets.all(4.0),
                                   child: Column(
                                     children: [
-                                      AutoSizeText(
-                                        menuItem.menuJp,
-                                        style: const TextStyle(
-                                          color: Colors.black87,
-                                          fontSize: 12,
-                                          decoration: TextDecoration.none,
-                                        ),
-                                        maxLines: 2,
-                                        minFontSize: 6,
-                                        overflow: TextOverflow.ellipsis,
-                                        textAlign: TextAlign.center,
-                                      ),
+                                      const SizedBox(height: 20), 
                                       AutoSizeText(
                                         menuItem.menuEn,
                                         style: const TextStyle(
                                           color: Colors.black87,
-                                          fontSize: 12,
+                                          fontSize: 18,
                                           decoration: TextDecoration.none,
                                         ),
                                         maxLines: 2,
@@ -167,7 +184,18 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                                         overflow: TextOverflow.ellipsis,
                                         textAlign: TextAlign.center,
                                       ),
-
+                                      AutoSizeText(
+                                        menuItem.menuJp,
+                                        style: const TextStyle(
+                                          color: Colors.black87,
+                                          fontSize: 14,
+                                          decoration: TextDecoration.none,
+                                        ),
+                                        maxLines: 2,
+                                        minFontSize: 6,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -479,207 +507,384 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
       }
     }
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          insetPadding: EdgeInsets.all(20),
-          child: StatefulBuilder(
-            builder: (context, setState) {
-              return Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // 画像領域と矢印ボタン
-                        Container(
-                          width: double.infinity,
-                          height: 250.0,
-                          child: Stack(
-                            children: [
-                              Positioned.fill(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Image.network(
-                                    menuItem.imageUrls![currentImageIndex],
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Center(
-                                        child: Icon(
-                                          Icons.broken_image,
-                                          color: Colors.grey[700],
-                                          size: 50,
-                                        ),
-                                      );
-                                    },
+    Future<String> regenerateImage(String menuName) async {
+      final url = '${MAIN_URL}/generate-image';
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8', // UTF-8 エンコーディングを指定
+        },
+        body: json.encode({
+          'menu_name': menuName
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        print(responseData);
+        return responseData['image_base64'];  // 生成された画像のBase64データを返す
+      } else {
+        throw Exception('Failed to regenerate image');
+      }
+    }
+
+  showDialog(
+  context: context,
+  builder: (BuildContext context) {
+    bool _isRotating = false; // アイコンが回転中かどうかの状態
+    return Dialog(
+      insetPadding: EdgeInsets.all(20),
+      child: StatefulBuilder(
+        builder: (context, setState) {
+          // 現在表示している画像インデックス（base64 + imageUrls を考慮）
+          int totalImagesCount = 0;
+          if (menuItem.base64Image.isNotEmpty) {
+            totalImagesCount++; // base64Imageがあれば1枚目としてカウント
+          }
+          if (menuItem.imageUrls != null && menuItem.imageUrls!.isNotEmpty) {
+            totalImagesCount += menuItem.imageUrls!.length; // imageUrlsの枚数をカウント
+          }
+
+          return Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 画像領域と矢印ボタン
+                    Container(
+                      width: double.infinity,
+                      height: 250.0,
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: totalImagesCount == 0
+                                  ? Center(
+                                      child: Icon(
+                                        Icons.broken_image,
+                                        color: Colors.grey[700],
+                                        size: 50,
+                                      ),
+                                    )
+                                  : menuItem.base64Image.isNotEmpty
+                                    ? currentImageIndex == 0
+                                      ? Image.memory(
+                                          base64Decode(menuItem.base64Image), // Base64データをデコードして表示
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return Center(
+                                              child: Icon(
+                                                Icons.broken_image,
+                                                color: Colors.grey[700],
+                                                size: 50,
+                                              ),
+                                            );
+                                          },
+                                        )
+                                      : menuItem.imageUrls != null && menuItem.imageUrls!.isNotEmpty
+                                          ? Image.network(
+                                              menuItem.imageUrls![currentImageIndex - 1], // 2枚目以降の画像
+                                              fit: BoxFit.cover,
+                                              loadingBuilder: (context, child, loadingProgress) {
+                                                if (loadingProgress == null) {
+                                                  return child;
+                                                }
+                                                return const Center(child: CircularProgressIndicator());
+                                              },
+                                              errorBuilder: (context, error, stackTrace) {
+                                                return Center(
+                                                  child: Icon(
+                                                    Icons.broken_image,
+                                                    color: Colors.grey[700],
+                                                    size: 50,
+                                                  ),
+                                                );
+                                              },
+                                            )
+                                          : Center(
+                                              child: Icon(
+                                                Icons.broken_image,
+                                                color: Colors.grey[700],
+                                                size: 50,
+                                              ),
+                                            )
+                                    : Image.network(
+                                        menuItem.imageUrls![currentImageIndex], // 2枚目以降の画像
+                                        fit: BoxFit.cover,
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) {
+                                            return child;
+                                          }
+                                          return const Center(child: CircularProgressIndicator());
+                                        },
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Center(
+                                            child: Icon(
+                                              Icons.broken_image,
+                                              color: Colors.grey[700],
+                                              size: 50,
+                                            ),
+                                          );
+                                        },
+                                      )
+                            )
+                          ),
+                          // 左矢印ボタン（Base64がない場合、imageUrlsがある場合に表示）
+                          if (currentImageIndex > 0)
+                            Positioned(
+                              left: 5,
+                              top: 0,
+                              bottom: 0,
+                              child: IconButton(
+                                icon: Icon(Icons.arrow_back, color: Colors.black54),
+                                onPressed: () {
+                                  setState(() {
+                                    currentImageIndex = (currentImageIndex - 1) % totalImagesCount;
+                                  });
+                                },
+                              ),
+                            ),
+                          // 右矢印ボタン（Base64がない場合、imageUrlsがある場合に表示）
+                          if (currentImageIndex < totalImagesCount - 1)
+                            Positioned(
+                              right: 5,
+                              top: 0,
+                              bottom: 0,
+                              child: IconButton(
+                                icon: Icon(Icons.arrow_forward, color: Colors.black54),
+                                onPressed: () {
+                                  setState(() {
+                                    currentImageIndex = (currentImageIndex + 1) % totalImagesCount;
+                                  });
+                                },
+                              ),
+                            ),
+                          // 再生成ボタン（右下）
+                          Positioned(
+                            right: 5,
+                            bottom: 5,
+                            child: IconButton(
+                              icon: AnimatedContainer(
+                                padding: const EdgeInsets.all(4.0),  // アイコンの周りの余白
+                                duration: Duration(milliseconds: 300), // アニメーションの長さ
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.9),  // アイコンの背景色
+                                  shape: BoxShape.circle,  // 背景を丸くする
+                                  boxShadow: [
+                                    BoxShadow(
+                                      blurRadius: 6.0,
+                                      color: Colors.black.withOpacity(0.2),  // 影の色
+                                      offset: Offset(2, 2),  // 影の位置
+                                    ),
+                                  ],
+                                ),
+                                child: AnimatedRotation(
+                                  turns: _isRotating ? 100 : 0, // クリックされたときに回転
+                                  duration: Duration(seconds: 100), // 回転のアニメーションの長さ
+                                  child: Icon(
+                                    Icons.refresh,  // 再生成アイコン
+                                    color: Colors.blue,
+                                    size: 25.0,  // アイコンのサイズ
                                   ),
                                 ),
                               ),
-                              // 左矢印ボタン
-                              if (currentImageIndex > 0)
-                                Positioned(
-                                  left: 5,
-                                  top: 0,
-                                  bottom: 0,
-                                  child: IconButton(
-                                    icon: Icon(Icons.arrow_back, color: Colors.black54),
-                                    onPressed: () {
-                                      setState(() {
-                                        currentImageIndex = (currentImageIndex - 1) % menuItem.imageUrls!.length;
-                                      });
-                                    },
-                                  ),
-                                ),
-                              // 右矢印ボタン
-                              if (currentImageIndex < menuItem.imageUrls!.length - 1)
-                                Positioned(
-                                  right: 5,
-                                  top: 0,
-                                  bottom: 0,
-                                  child: IconButton(
-                                    icon: Icon(Icons.arrow_forward, color: Colors.black54),
-                                    onPressed: () {
-                                      setState(() {
-                                        currentImageIndex = (currentImageIndex + 1) % menuItem.imageUrls!.length;
-                                      });
-                                    },
-                                  ),
-                                ),
-                            ],
+
+                              onPressed: () async {
+                                // アニメーションを開始
+                                setState(() {
+                                  _isRotating = true;
+                                });
+
+                                // ローディング画面を表示
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (BuildContext context) {
+                                    final languageProvider = Provider.of<LanguageProvider>(context);
+                                    return AlertDialog(
+                                      content: Row(
+                                        children: [
+                                          Text(languageProvider.getLocalizedString('generating')),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                );
+
+                                try {
+                                  // API呼び出しを行い、画像を再生成
+                                  String newImageBase64 = await regenerateImage(menuItem.menuJp);
+
+                                  setState(() {
+                                    menuItem.isBase64Image = true; // Base64形式の画像として扱う
+                                    menuItem.base64Image = newImageBase64;  // 新しい画像データをBase64としてセット
+                                    currentImageIndex = 0;  // 生成したばかりの画像を表示
+                                  });
+                                } catch (e) {
+                                  // エラーハンドリング
+                                  print("Error generating image: $e");
+                                } finally {
+                                  Navigator.pop(context); // ローディングダイアログを閉じる
+                                }
+
+                                setState(() {
+                                  _isRotating = false;
+                                });
+                              },
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        AutoSizeText(
-                          menuItem.menuJp,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 2,
-                          minFontSize: 14,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 10),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,  // 水平中央揃え
+                      children: [
+                        // AutoSizeText: メニュー名
                         AutoSizeText(
                           menuItem.menuEn,
                           style: const TextStyle(
-                            color: Colors.black,
+                            color: Colors.blue,
                             fontSize: 18,
-                            fontWeight: FontWeight.w400,
+                            fontWeight: FontWeight.bold,
+
+                          decoration: TextDecoration.underline, 
+                          decorationColor: Colors.blue,
+                          decorationThickness: 1.0,
                           ),
                           maxLines: 2,
                           minFontSize: 14,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 10),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
+                        const SizedBox(width: 5),  // テキストとアイコンの間に余白を追加
+                        // GestureDetector: 検索アイコン
+                        GestureDetector(
+                          onTap: () async {
+                            final url = 'https://www.google.com/search?q=${Uri.encodeComponent(menuItem.menuEn)}';
+                            if (await canLaunch(url)) {
+                              await launch(url);
+                            } else {
+                              throw 'Could not launch $url';
+                            }
+                          },
+                          child: Icon(
+                            Icons.search,  // 検索アイコン
+                            color: Colors.blue,  // アイコンの色
+                            size: 24,  // アイコンのサイズ
+                          ),
+                        ),
+                      ],
+                    ),
+                    // const SizedBox(height: 10),
+                    // AutoSizeText(
+                    //   menuItem.menuJp,
+                    //   style: const TextStyle(
+                    //     color: Colors.black,
+                    //     fontSize: 16,
+                    //     fontWeight: FontWeight.w400,
+                    //   ),
+                    //   maxLines: 2,
+                    //   minFontSize: 12,
+                    //   overflow: TextOverflow.ellipsis,
+                    //   textAlign: TextAlign.center,
+                    // ),
+                    const SizedBox(height: 10),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child:
+                        Text(
                             menuItem.description,
                             style: const TextStyle(color: Colors.black, fontSize: 16),
                             textAlign: TextAlign.center,
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        // 個数選択
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.remove, color: Colors.black),
-                              onPressed: () {
-                                setState(() {
-                                  if (tempQuantity > 0) {
-                                    tempQuantity--;
-                                  }
-                                });
-                              },
-                            ),
-                            Text('$tempQuantity', style: const TextStyle(fontSize: 18, color: Colors.black)),
-                            IconButton(
-                              icon: const Icon(Icons.add, color: Colors.black),
-                              onPressed: () {
-                                setState(() {
-                                  if (tempQuantity < 10) {
-                                    tempQuantity++;
-                                  }
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                        Row(
-                        // 画像アップロードボタン
-                        children: [
-                          ElevatedButton(
-                            onPressed: isUploading ? null :() async {
-                              final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-                              if (pickedFile != null) {
-                                _selectedImage = File(pickedFile.path);
-                                await _uploadImage(_selectedImage!);
-                                setState(() {});  // 状態を更新してUIを再描画
+                    ),
+                    const SizedBox(height: 10),
+                    // 個数選択
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove, color: Colors.black),
+                          onPressed: () {
+                            setState(() {
+                              if (tempQuantity > 0) {
+                                tempQuantity--;
                               }
-                            },
-                           child: isUploading 
-                                ? const CircularProgressIndicator()  // アップロード中はインジケーター表示
-                                : Text(Provider.of<LanguageProvider>(context).getLocalizedString('upload_image')),
-                          ),
-                          const SizedBox(width: 30),
-                          // 追加ボタン
-                          ElevatedButton(
-                            onPressed: () {
-                              onQuantityUpdated(MenuItem(
-                                menuJp: menuItem.menuJp,
-                                menuEn: menuItem.menuEn,
-                                description: menuItem.description,
-                                imageUrls: menuItem.imageUrls,
-                                quantity: tempQuantity,
-                              ));
-                              Navigator.of(context).pop();
-                            },
-                            child: Text(Provider.of<LanguageProvider>(context).getLocalizedString('confirm')),
-                          )],
-                        )
+                            });
+                          },
+                        ),
+                        Text('$tempQuantity', style: const TextStyle(fontSize: 18, color: Colors.black)),
+                        IconButton(
+                          icon: const Icon(Icons.add, color: Colors.black),
+                          onPressed: () {
+                            setState(() {
+                              if (tempQuantity < 10) {
+                                tempQuantity++;
+                              }
+                            });
+                          },
+                        ),
                       ],
                     ),
-                  ),
-                  // バツボタンを右上に配置
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: GestureDetector(
-                      onTap: () {
+                    // 追加ボタン
+                    ElevatedButton(
+                      onPressed: () {
+                        onQuantityUpdated(MenuItem(
+                          menuJp: menuItem.menuJp,
+                          menuEn: menuItem.menuEn,
+                          description: menuItem.description,
+                          imageUrls: menuItem.imageUrls,
+                          quantity: tempQuantity,
+                        ));
                         Navigator.of(context).pop();
                       },
-                      child: Container(
-                        padding: const EdgeInsets.all(6.0),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.close,
-                          color: Colors.white,
-                          size: 24.0,
-                        ),
-                      ),
+                      child: Text(Provider.of<LanguageProvider>(context).getLocalizedString('confirm')),
+                    ),
+                  ],
+                ),
+              ),
+              // バツボタンを右上に配置
+              Positioned(
+                top: 10,
+                right: 10,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(6.0),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.close,
+                      color: Colors.white,
+                      size: 24.0,
                     ),
                   ),
-                ],
-              );
-            },
-          ),
-        );
-      },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
+  },
+).then((value) {
+  // ダイアログが閉じられた後の処理を行う
+  setState(() {});
+});
+
+
   }
 }

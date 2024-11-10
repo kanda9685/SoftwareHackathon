@@ -20,6 +20,7 @@ class LanguageProvider with ChangeNotifier {
       return "English";
     }
   }
+
   String get selectedLanguage => _selectedLanguage;
 
   void updateLanguage(String newLanguage) {
@@ -59,9 +60,27 @@ class LanguageProvider with ChangeNotifier {
       case 'Spanish':
         return 'Spanish';
       case 'French':
-        return 'Franch';
+        return 'French';
       default:
         return 'English';
+    }
+  }
+
+    // 言語に応じた店名と「menu」の順番を決定するメソッド
+  String getMenuTitleOrder() {
+    switch (_selectedLanguage) {
+      case 'English':
+        return 'front'; // 店名が前
+      case 'Korean':
+        return 'back';  // 「menu」が後ろ
+      case 'Chinese':
+        return 'back';  // 「menu」が後ろ
+      case 'Spanish':
+        return 'back'; // 店名が前
+      case 'French':
+        return 'back';  // 「menu」が後ろ
+      default:
+        return 'front'; // デフォルトは店名が前
     }
   }
 
@@ -118,6 +137,7 @@ class LanguageProvider with ChangeNotifier {
     'Preview' : 'Preview',
     'dontdelete': 'Not delete',
     'delete_all_menus_forlang': 'Would you like to delete the menu exists already?',
+    'generating': 'Generating image with AI...',
   };
 
   // 韓国語の文字列
@@ -155,6 +175,7 @@ class LanguageProvider with ChangeNotifier {
     'Preview' : '미리보기',
     'dontdelete': '삭제하지 않음',
     'delete_all_menus_forlang': '이미 존재하는 메뉴를 삭제하시겠습니까?',
+    'generating': 'AI로 이미지 생성 중',
   };
 
   // 中国語の文字列
@@ -192,6 +213,7 @@ class LanguageProvider with ChangeNotifier {
     'Preview' : '预览',
     'dontdelete': '不删除',
     'delete_all_menus_forlang': '您想删除已经存在的菜单吗？',
+    'generating': 'AI正在生成图像', 
   };
 
   // スペイン語の文字列
@@ -229,6 +251,7 @@ class LanguageProvider with ChangeNotifier {
     'Preview' : 'Vista previa',
     'dontdelete': 'No eliminar',
     'delete_all_menus_forlang': '¿Le gustaría eliminar el menú que ya existe?',
+    'generating': 'Generando imagen con IA',
   };
 
   // フランス語の文字列
@@ -266,5 +289,6 @@ class LanguageProvider with ChangeNotifier {
     'Preview' : 'Aperçu',
     'dontdelete': 'Ne pas supprimer',
     'delete_all_menus_forlang': 'Souhaitez-vous supprimer le menu qui existe déjà ?',
+    'generating': 'Génération d\'image par IA', 
   };
 }

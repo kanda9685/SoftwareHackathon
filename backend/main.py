@@ -9,6 +9,7 @@ from io import BytesIO
 from backend.modules.ocr import get_menus
 from backend.modules.image_search import get_image
 from backend.modules.menu_description import transcribe_and_describe
+from backend.modules.dall_e import generate_image
 import time, os, requests
 from fastapi.responses import JSONResponse
 from pathlib import Path
@@ -76,13 +77,13 @@ async def process_menus_endpoint(lat: str=Form(...), lng: str=Form(...), file: U
             image_url = image_urls[i]  # 非同期で取得した画像URL
             
             image_urls_list = []
-            image_url2 = f"{MAIN_URL}/uploaded_images/menu1/{item['Menu_jp']}/{item['Menu_jp']}_1.jpg"
-            image_url3 = f"{MAIN_URL}/uploaded_images/menu1/{item['Menu_jp']}/{item['Menu_jp']}_2.jpg"
-            image_url4 = f"{MAIN_URL}/uploaded_images/menu1/{item['Menu_jp']}/{item['Menu_jp']}_3.jpg"
+            # image_url2 = f"{MAIN_URL}/uploaded_images/menu1/{item['Menu_jp']}/{item['Menu_jp']}_1.jpg"
+            # image_url3 = f"{MAIN_URL}/uploaded_images/menu1/{item['Menu_jp']}/{item['Menu_jp']}_2.jpg"
+            # image_url4 = f"{MAIN_URL}/uploaded_images/menu1/{item['Menu_jp']}/{item['Menu_jp']}_3.jpg"
             image_urls_list.append(image_url)
-            image_urls_list.append(image_url2)
-            image_urls_list.append(image_url3)
-            image_urls_list.append(image_url4)
+            # image_urls_list.append(image_url2)
+            # image_urls_list.append(image_url3)
+            # image_urls_list.append(image_url4)
             
             # 結果に追加
             results.append({
@@ -137,6 +138,22 @@ async def translate_menus_endpoint(request: Request):
     except Exception as e:
         logging.error("Error in translation: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
+    
+# API エンドポイントの作成
+@app.post("/generate-image", response_model=Dict[str, str])
+async def generate_image_endpoint(request: Request):
+    # デコードされたリクエストデータを確認
+    data = await request.json()
+    # データを取得
+    menu_name = data.get("menu_name")
+
+    # 画像を生成
+    image_data_base64 = await generate_image(menu_name)
+
+    return {
+        "image_base64": image_data_base64["image_base64"]
+    }
+
 
 # 画像ファイルが保存されているディレクトリ（要変更）
 IMAGE_DIRECTORY = "C:\\Users\\meron\\Desktop\\SoftwareHackathon\\backend\\uploaded_images"
