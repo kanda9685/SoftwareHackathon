@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:menu_app/providers/language_provider.dart';
 import 'package:menu_app/providers/camera_provider.dart';
 import 'package:menu_app/screens/order_history_screen.dart';
+import 'package:menu_app/providers/menu_items_provider.dart';
 import 'package:menu_app/screens/order_screen.dart'; // OrderScreen をインポート
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -20,7 +21,8 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => LanguageProvider()),
-        Provider(create: (context) => CameraProvider(firstCamera)), // CameraProviderを登録
+        ChangeNotifierProvider(create: (context) => CameraProvider(firstCamera)),
+        ChangeNotifierProvider(create: (context) => MenuItemsProvider()), 
       ],
       child: MyApp(camera: firstCamera),
     ),
@@ -46,16 +48,17 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
+  final int selectedIndex;
   final CameraDescription camera;
 
-  const MyHomePage({Key? key, required this.camera}) : super(key: key);
+  MyHomePage({Key? key, required this.camera, this.selectedIndex = 0}) : super(key: key);
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
   List<MenuItem> menuItems = [];
 
   // 各画面のリストを作成
@@ -64,12 +67,16 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+
+    final menuItemsProvider = Provider.of<MenuItemsProvider>(context, listen: false);
+    menuItems = menuItemsProvider.menuItems;
     _screens = [
       CameraScreen(camera: widget.camera, addMenuItems: addMenuItems, updateIndex: updateIndex),
       MenuGridScreen(menuItems: menuItems),
       const OrderHistoryScreen(),
       OrderScreen(selectedItems: menuItems), // OrderScreen を追加
     ];
+    _selectedIndex = widget.selectedIndex;
   }
 
   // メニューアイテムを追加するメソッド

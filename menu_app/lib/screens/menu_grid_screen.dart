@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';  // Providerのインポート
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:menu_app/providers/language_provider.dart';
+import 'package:menu_app/providers/menu_items_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // 翻訳のエンドポイントを変更する必要がある
@@ -28,6 +29,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
   @override
   Widget build(BuildContext context) {
   final languageProvider = Provider.of<LanguageProvider>(context);
+  List<MenuItem> menuItems = [];
 
     return Scaffold(
       appBar: AppBar(
@@ -240,7 +242,15 @@ class _MenuGridScreenState extends State<MenuGridScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => OrderScreen(selectedItems: selectedItems),
+                        builder: (context) {
+                          // `MenuItemsProvider` を使って `OrderScreen` をラップ
+                          return ChangeNotifierProvider.value(
+                            value: Provider.of<MenuItemsProvider>(context, listen: false), // 適切なプロバイダーのインスタンスを取得
+                            child: OrderScreen(
+                              selectedItems: selectedItems
+                            ),
+                          );
+                        },
                       ),
                     );
                   }

@@ -10,6 +10,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:menu_app/models/menu_item.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+
 
 class CameraScreen extends StatefulWidget {
   final CameraDescription camera;
@@ -48,44 +51,6 @@ class _CameraScreenState extends State<CameraScreen> {
     super.dispose();
   }
 
-  void _showLanguageDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Select Language"),
-          content: Container(
-            width: double.maxFinite,
-            child: ListView(
-              shrinkWrap: true,
-              children: <String>['English', 'Chinese', 'Korean']
-                  .map((String language) {
-                return ListTile(
-                  title: Text(language),
-                  trailing: Provider.of<LanguageProvider>(context).selectedLanguage == language
-                      ? Icon(Icons.check, color: Colors.blue)
-                      : null,
-                  onTap: () {
-                    Provider.of<LanguageProvider>(context, listen: false).updateLanguage(language);
-                    Navigator.of(context).pop();
-                  },
-                );
-              }).toList(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text("Cancel"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Widget _buildCameraScreen() {
     return Column(
       children: [
@@ -103,32 +68,112 @@ class _CameraScreenState extends State<CameraScreen> {
                   }
                 },
               ),
-            ],
-          ),
-        ),
-        FloatingActionButton(
-          onPressed: () async {
-            try {
-              await _initializeControllerFuture;
-              final image = await _controller.takePicture();
-              await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => DisplayPictureScreen(
-                    imagePath: image.path,
-                    addMenuItems: widget.addMenuItems,
-                    updateIndex: widget.updateIndex,
+              Positioned(
+                bottom: 30,
+                left: 0,
+                right: 0,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // ギャラリーの選択ボタン
+                      GestureDetector(
+                        onTap: () async {
+                          // ギャラリーから画像を選択
+                          final picker = ImagePicker();
+                          final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+                          
+                          if (pickedFile != null) {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => DisplayPictureScreen(
+                                  imagePath: pickedFile.path,
+                                  addMenuItems: widget.addMenuItems,
+                                  updateIndex: widget.updateIndex,
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 6,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(
+                                Icons.photo_library, // ギャラリーアイコン
+                                size: 30,
+                                color: Colors.black,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // カメラボタン
+                      GestureDetector(
+                        onTap: () async {
+                          try {
+                            await _initializeControllerFuture;
+                            final image = await _controller.takePicture();
+                            // 撮影後に表示画面に遷移
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => DisplayPictureScreen(
+                                  imagePath: image.path,
+                                  addMenuItems: widget.addMenuItems,
+                                  updateIndex: widget.updateIndex,
+                                ),
+                              ),
+                            );
+                          } catch (e) {
+                            print(e);
+                          }
+                        },
+                        child: Container(
+                          width: 70,
+                          height: 70,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 6,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            size: 40,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 60), // ボタン間のスペース
+                    ],
                   ),
                 ),
-              );
-            } catch (e) {
-              print(e);
-            }
-          },
-          child: const Icon(Icons.camera_alt),
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -288,7 +333,7 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(Provider.of<LanguageProvider>(context).getLocalizedString('Preview'))),
-      body: Image.file(File(widget.imagePath)),
+      body: Image.file(File(widget.imagePath), fit: BoxFit.contain),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await uploadImage(widget.imagePath);
