@@ -28,7 +28,16 @@ class OrderScreen extends StatelessWidget {
     final languageProvider = Provider.of<LanguageProvider>(context); // Access LanguageProvider
 
     return Scaffold(
-      appBar: AppBar(title: Text(languageProvider.getLocalizedString('Order_Phrase'))), // Use localized string
+      appBar: AppBar(
+        title: Text(languageProvider.getLocalizedString('Order_Phrase')),
+        bottom: PreferredSize(
+            preferredSize: Size.fromHeight(1.0), // 横線の高さを指定
+            child: Container(
+              color: Colors.grey, // 横線の色を指定
+              height: 0.5, // 横線の太さを指定
+            ),
+          ),
+      ), // Use localized string
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
