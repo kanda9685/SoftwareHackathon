@@ -42,7 +42,6 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
 
   // タブを初期化する関数
   void _initializeTabController() {
-    print(widget.menuItems);
     _categories = widget.menuItems
         .map((item) => item.category)
         .toSet()
@@ -245,8 +244,9 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                                     child: Padding(
                                       padding: const EdgeInsets.all(4.0),
                                       child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center, // Column内で中央揃え
+                                        crossAxisAlignment: CrossAxisAlignment.center, // 横の中央揃え
                                         children: [
-                                          const SizedBox(height: 20),
                                           AutoSizeText(
                                             menuItem.menuEn,
                                             style: const TextStyle(
@@ -255,7 +255,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                                               decoration: TextDecoration.none,
                                             ),
                                             maxLines: 2,
-                                            minFontSize: 6,
+                                            minFontSize: 10,
                                             overflow: TextOverflow.ellipsis,
                                             textAlign: TextAlign.center,
                                           ),
@@ -279,7 +279,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                               ),
                               Positioned(
                                 right: 8,
-                                bottom: 8,
+                                top: 8,
                                 child: Container(
                                   padding: const EdgeInsets.all(6.0),
                                   decoration: BoxDecoration(
@@ -832,59 +832,55 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Row(
-                    mainAxisAlignment: MainAxisAlignment.center,  // 水平中央揃え
-                    children: [
-                      // MaterialとInkWellでラップ
-                      Material(
-                        color: Colors.transparent,  // 背景色を透明にして、タップ時のエフェクトのみ表示
-                        child: InkWell(
-                          onTap: () async {
-                            final Uri url = Uri.parse('https://www.google.com/search?q=${Uri.encodeComponent(menuItem.menuEn)}');
-                            if (await canLaunchUrl(url)) {
-                              await launchUrl(url);
-                            } else {
-                              throw 'Could not launch $url';
-                            }
-                          },
-                          highlightColor: Colors.blue.withOpacity(0.1), // タップ時に背景色が変わる
-                          splashColor: Colors.blue.withOpacity(0.2),    // タップ時の波紋効果
-                          child: AutoSizeText(
-                            menuItem.menuEn,
-                            style: const TextStyle(
-                              color: Colors.blue,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
-                              decorationColor: Colors.blue,
-                              decorationThickness: 1.0,
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center, // 縦方向の中央揃え
+                      crossAxisAlignment: CrossAxisAlignment.center, // 横方向の中央揃え
+                      children: [
+                        Material(
+                          color: Colors.transparent,  // 背景を透明に
+                          child: InkWell(
+                            onTap: () async {
+                              final Uri url = Uri.parse('https://www.google.com/search?q=${Uri.encodeComponent(menuItem.menuEn)}');
+                              if (await canLaunchUrl(url)) {
+                                await launchUrl(url);
+                              } else {
+                                throw 'Could not launch $url';
+                              }
+                            },
+                            splashColor: Colors.blue.withOpacity(0.2),  // クリック時のインクエフェクトの色
+                            highlightColor: Colors.blue.withOpacity(0.1), // タップした時のハイライト色
+                            child: RichText(
+                              textAlign: TextAlign.center,  // テキストを中央揃え
+                              text: TextSpan(
+                                style: const TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: Colors.blue,
+                                  decorationThickness: 1.0,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: menuItem.menuEn,  // 料理名のテキスト
+                                  ),
+                                  const TextSpan(
+                                    text: " ", // テキストとアイコンの間にスペース
+                                  ),
+                                  WidgetSpan(
+                                    child: Icon(
+                                      Icons.search,
+                                      color: Colors.blue,
+                                      size: 22,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            maxLines: 2,
-                            minFontSize: 14,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 5),  // テキストとアイコンの間に余白を追加
-                      // GestureDetector: 検索アイコン
-                      GestureDetector(
-                        onTap: () async {
-                          final Uri url = Uri.parse('https://www.google.com/search?q=${Uri.encodeComponent(menuItem.menuEn)}');
-                          if (await canLaunchUrl(url)) {
-                            await launchUrl(url);
-                          } else {
-                            throw 'Could not launch $url';
-                          }
-                        },
-                        child: Icon(
-                          Icons.search,  // 検索アイコン
-                          color: Colors.blue,  // アイコンの色
-                          size: 24,  // アイコンのサイズ
-                        ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                     // const SizedBox(height: 10),
                     // AutoSizeText(
                     //   menuItem.menuJp,

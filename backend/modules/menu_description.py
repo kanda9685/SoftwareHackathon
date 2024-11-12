@@ -43,16 +43,22 @@ async def transcribe_and_describe(dish_names: list[str], language: str = "englis
     # prompt = (
     #     "Translate the following list of Japanese dish names to {language}, and provide a brief description for each dish in {language}. "
     #     "Please include all food and beverage items, but exclude any items that are clearly not related to food or beverages (e.g., generic terms, non-food items, or meal courses). "
-    #     "Correct any minor typos if needed (e.g., '天ぶら' should be corrected to '天ぷら'). Return each translation and description in the format 'Japanese name | Translated name | Description'. "
-    #     "For example, 'いちごのパフェ | strawberry parfait | a parfait made with strawberries and cream.'\n\n"
+    #     "Correct any minor typos if needed (e.g., '天ぶら' should be corrected to '天ぷら'). For each dish, categorize it into one of the following categories: "
+    #     "Main Dishes, Side Dishes, Desserts, Drinks. Please translate the category name into {language} as well. "
+    #     "Return each translation and description in the format 'Japanese name | Translated name | Description | Category'. "
+    #     "For example, 'いちごのパフェ | strawberry parfait | a parfait made with strawberries and cream. | Desserts'.\n\n"
     # )
     prompt = (
         "Translate the following list of Japanese dish names to {language}, and provide a brief description for each dish in {language}. "
         "Please include all food and beverage items, but exclude any items that are clearly not related to food or beverages (e.g., generic terms, non-food items, or meal courses). "
         "Correct any minor typos if needed (e.g., '天ぶら' should be corrected to '天ぷら'). For each dish, categorize it into one of the following categories: "
         "Main Dishes, Side Dishes, Desserts, Drinks. Please translate the category name into {language} as well. "
-        "Return each translation and description in the format 'Japanese name | Translated name | Description | Category'. "
-        "For example, 'いちごのパフェ | strawberry parfait | a parfait made with strawberries and cream. | Desserts'.\n\n"
+        "If the input string contains category-related words (e.g., 'デザート', '飲み物', '主菜', 'サイドディッシュ'), use them to assign the correct category based on {language}. "
+        "If no category-related words are detected or if they don't match one of the categories, assign it to one of these categories: Main Dishes, Side Dishes, Desserts, Drinks. "
+        "In addition, if a price (e.g., '500円', '1000円') is recognized, include the price alongside the dish name. "
+        "The price should be appended to the output as '料理名 | Translated name | Description | Category | Price'. If no price is detected, use '---円' as the price. "
+        "Return each translation and description in the format 'Japanese name | Translated name | Description | Category | Price'. "
+        "For example, 'いちごのパフェ | strawberry parfait | a parfait made with strawberries and cream. | Desserts | 600円'.\n\n"
     )
 
     # 言語設定に基づいてプロンプトのプレースホルダを置き換える
@@ -77,12 +83,13 @@ async def transcribe_and_describe(dish_names: list[str], language: str = "englis
         for line in remove_double_quotes(response_content).splitlines():
             if line.strip():  # 空行は無視
                 try:
-                    menu_jp, menu_translated, description, category = [part.strip() for part in line.split("|")]
+                    menu_jp, menu_translated, description, category, price = [part.strip() for part in line.split("|")]
                     results.append({
                         "Menu_jp": remove_before_first_japanese(menu_jp),
                         "Menu_en": menu_translated,
                         "Description": description,
-                        "Category": category
+                        "Category": category,
+                        "Price": price
                     })
                 except ValueError:
                     print(f"Failed to parse line: {line}")
