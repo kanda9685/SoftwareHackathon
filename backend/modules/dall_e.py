@@ -27,7 +27,7 @@ async def generate_image_base64(prompt: str) -> str:
 # 画像生成
 async def generate_image(menu_name):
     prompt = f"A simple and realistic photo of {menu_name} taken in a casual restaurant setting. \
-The {menu_name} is placed on a clean table or surface, with natural lighting, emphasizing its natural textures and colors. "
+The {menu_name} is placed on a clean plate or appropriate serving dish, on a clean table or surface, with natural lighting, emphasizing its natural textures and colors."
 
     start_time = time.time()
     image_data_base64 = await generate_image_base64(prompt)

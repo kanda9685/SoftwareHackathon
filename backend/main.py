@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse
 from typing import List, Dict, Any, Optional
 from PIL import Image
 from io import BytesIO
-from backend.modules.ocr import get_menus
+from backend.modules.ocr_google_api import get_menus
 from backend.modules.image_search import get_image
 from backend.modules.menu_description import transcribe_and_describe
 from backend.modules.dall_e import generate_image
@@ -92,7 +92,8 @@ async def process_menus_endpoint(lat: str=Form(...), lng: str=Form(...), file: U
                 "description": item['Description'],
                 "image_urls": image_urls_list,
                 'shop_name': shop_name,
-                "category": item["Category"]
+                "category": item["Category"],
+                "price": item['Price'], 
             })
         
         return {"results": results, "time": time.time() - start_time}

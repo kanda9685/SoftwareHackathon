@@ -42,7 +42,6 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
 
   // タブを初期化する関数
   void _initializeTabController() {
-    print(widget.menuItems);
     _categories = widget.menuItems
         .map((item) => item.category)
         .toSet()
@@ -82,6 +81,18 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
+
+    // 総合計金額を計算
+    int totalPrice = 0;
+    for (var menuItem in widget.menuItems) {
+      // 価格が負でない場合のみ計算に加算
+      if (menuItem.price >= 0) {
+        totalPrice += menuItem.price * menuItem.quantity;
+      }
+    }
+
+    // 合計金額が負の場合は "￥-xxx" という形式で表示
+    String totalPriceString = totalPrice < 0 ? '￥-${totalPrice.abs()}' : '￥${totalPrice}';
 
     return Scaffold(
       appBar: AppBar(
@@ -156,12 +167,8 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                       final menuItem = _filteredItems[index];
                       return GestureDetector(
                         onTap: () {
-                          _showMenuItemDialog(context, menuItem, (updatedMenuItem) {
-                            setState(() {
-                              // 親ウィジェットの状態を更新
-                              widget.menuItems[index] = updatedMenuItem;
-                            });
-                          });
+                          _showMenuItemDialog(context, menuItem
+                          );
                         },
                         child: Container(
                           margin: const EdgeInsets.all(4.0),
@@ -249,13 +256,27 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                                     child: Padding(
                                       padding: const EdgeInsets.all(4.0),
                                       child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center, // Column内で中央揃え
+                                        crossAxisAlignment: CrossAxisAlignment.center, // 横の中央揃え
                                         children: [
-                                          const SizedBox(height: 20),
                                           AutoSizeText(
                                             menuItem.menuEn,
                                             style: const TextStyle(
                                               color: Colors.black87,
                                               fontSize: 18,
+                                              decoration: TextDecoration.none,
+                                              fontWeight: FontWeight.bold
+                                            ),
+                                            maxLines: 2,
+                                            minFontSize: 10,
+                                            overflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          AutoSizeText(
+                                            menuItem.menuJp,
+                                            style: const TextStyle(
+                                              color: Colors.black87,
+                                              fontSize: 14,
                                               decoration: TextDecoration.none,
                                             ),
                                             maxLines: 2,
@@ -264,7 +285,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                                             textAlign: TextAlign.center,
                                           ),
                                           AutoSizeText(
-                                            menuItem.menuJp,
+                                            menuItem.price < 0 ? '¥-' : '¥${menuItem.price}',
                                             style: const TextStyle(
                                               color: Colors.black87,
                                               fontSize: 14,
@@ -283,7 +304,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                               ),
                               Positioned(
                                 right: 8,
-                                bottom: 8,
+                                top: 8,
                                 child: Container(
                                   padding: const EdgeInsets.all(6.0),
                                   decoration: BoxDecoration(
@@ -316,7 +337,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                         MaterialPageRoute(
                           builder: (context) {
                             return ChangeNotifierProvider.value(
-                              value: Provider.of<MenuItemsProvider>(context, listen: false),
+                              value: Provider.of<MenuItemsProvider>(context, listen: true),
                               child: OrderScreen(selectedItems: selectedItems),
                             );
                           },
@@ -337,10 +358,16 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    // 表示部分
                     children: [
                       const Icon(Icons.checklist, size: 20),
                       const SizedBox(width: 8),
-                      Text(languageProvider.getLocalizedString('order')),
+                      Text(languageProvider.getLocalizedString('order')),  // 'order' の横に表示する
+                      const SizedBox(width: 8),  // 少し間隔を空ける
+                      Text(
+                        totalPriceString,  // 総合計金額を表示
+                        style: TextStyle(fontSize: 16),  // 太字にして、サイズ調整
+                      ),
                     ],
                   ),
                 ),
@@ -511,7 +538,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
   bool isUploading = false;
 
   void _showMenuItemDialog(
-    BuildContext context, MenuItem menuItem, Function(MenuItem) onQuantityUpdated) {
+    BuildContext context, MenuItem menuItem) {
     int tempQuantity = menuItem.quantity;
     int currentImageIndex = 0;
     
@@ -836,59 +863,55 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Row(
-                    mainAxisAlignment: MainAxisAlignment.center,  // 水平中央揃え
-                    children: [
-                      // MaterialとInkWellでラップ
-                      Material(
-                        color: Colors.transparent,  // 背景色を透明にして、タップ時のエフェクトのみ表示
-                        child: InkWell(
-                          onTap: () async {
-                            final Uri url = Uri.parse('https://www.google.com/search?q=${Uri.encodeComponent(menuItem.menuEn)}');
-                            if (await canLaunchUrl(url)) {
-                              await launchUrl(url);
-                            } else {
-                              throw 'Could not launch $url';
-                            }
-                          },
-                          highlightColor: Colors.blue.withOpacity(0.1), // タップ時に背景色が変わる
-                          splashColor: Colors.blue.withOpacity(0.2),    // タップ時の波紋効果
-                          child: AutoSizeText(
-                            menuItem.menuEn,
-                            style: const TextStyle(
-                              color: Colors.blue,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
-                              decorationColor: Colors.blue,
-                              decorationThickness: 1.0,
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center, // 縦方向の中央揃え
+                      crossAxisAlignment: CrossAxisAlignment.center, // 横方向の中央揃え
+                      children: [
+                        Material(
+                          color: Colors.transparent,  // 背景を透明に
+                          child: InkWell(
+                            onTap: () async {
+                              final Uri url = Uri.parse('https://www.google.com/search?q=${Uri.encodeComponent(menuItem.menuEn)}');
+                              if (await canLaunchUrl(url)) {
+                                await launchUrl(url);
+                              } else {
+                                throw 'Could not launch $url';
+                              }
+                            },
+                            splashColor: Colors.blue.withOpacity(0.2),  // クリック時のインクエフェクトの色
+                            highlightColor: Colors.blue.withOpacity(0.1), // タップした時のハイライト色
+                            child: RichText(
+                              textAlign: TextAlign.center,  // テキストを中央揃え
+                              text: TextSpan(
+                                style: const TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: Colors.blue,
+                                  decorationThickness: 1.0,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: menuItem.menuEn,  // 料理名のテキスト
+                                  ),
+                                  const TextSpan(
+                                    text: " ", // テキストとアイコンの間にスペース
+                                  ),
+                                  WidgetSpan(
+                                    child: Icon(
+                                      Icons.search,
+                                      color: Colors.blue,
+                                      size: 22,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            maxLines: 2,
-                            minFontSize: 14,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 5),  // テキストとアイコンの間に余白を追加
-                      // GestureDetector: 検索アイコン
-                      GestureDetector(
-                        onTap: () async {
-                          final Uri url = Uri.parse('https://www.google.com/search?q=${Uri.encodeComponent(menuItem.menuEn)}');
-                          if (await canLaunchUrl(url)) {
-                            await launchUrl(url);
-                          } else {
-                            throw 'Could not launch $url';
-                          }
-                        },
-                        child: Icon(
-                          Icons.search,  // 検索アイコン
-                          color: Colors.blue,  // アイコンの色
-                          size: 24,  // アイコンのサイズ
-                        ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                     // const SizedBox(height: 10),
                     // AutoSizeText(
                     //   menuItem.menuJp,
@@ -903,6 +926,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                     //   textAlign: TextAlign.center,
                     // ),
                     const SizedBox(height: 10),
+                    // 説明文表示
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child:
@@ -912,8 +936,8 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                             textAlign: TextAlign.center,
                           ),
                     ),
-                    const SizedBox(height: 10),
-                    // 個数選択
+                    const SizedBox(height: 5),
+                    // 個数表示
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -940,20 +964,31 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                         ),
                       ],
                     ),
+                    const SizedBox(height: 5),
                     // 追加ボタン
                     ElevatedButton(
                       onPressed: () {
-                        onQuantityUpdated(MenuItem(
-                          menuJp: menuItem.menuJp,
-                          menuEn: menuItem.menuEn,
-                          description: menuItem.description,
-                          imageUrls: menuItem.imageUrls,
-                          quantity: tempQuantity,
-                          category: menuItem.category,
-                        ));
+                        // 元のMenuItemのquantityを更新
+                        menuItem.quantity = tempQuantity;
+
+                        // Navigatorで画面を戻す
                         Navigator.of(context).pop();
                       },
-                      child: Text(Provider.of<LanguageProvider>(context).getLocalizedString('confirm')),
+                      child: RichText(
+                        text: TextSpan(
+                          style: const TextStyle(
+                            fontSize: 16,  // フォントサイズを調整
+                          ),
+                          children: [
+                            TextSpan(
+                              text: '${Provider.of<LanguageProvider>(context).getLocalizedString('confirm')} ',
+                            ),
+                            TextSpan(
+                              text: menuItem.price < 0 ? '¥-' : '¥${menuItem.price * tempQuantity}',
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
