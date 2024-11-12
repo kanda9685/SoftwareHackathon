@@ -82,6 +82,18 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
 
+    // 総合計金額を計算
+    int totalPrice = 0;
+    for (var menuItem in widget.menuItems) {
+      // 価格が負でない場合のみ計算に加算
+      if (menuItem.price >= 0) {
+        totalPrice += menuItem.price * menuItem.quantity;
+      }
+    }
+
+    // 合計金額が負の場合は "￥-xxx" という形式で表示
+    String totalPriceString = totalPrice < 0 ? '￥-${totalPrice.abs()}' : '￥${totalPrice}';
+
     return Scaffold(
       appBar: AppBar(
         title: widget.menuItems.isEmpty || widget.menuItems[0].shopName.isEmpty
@@ -253,6 +265,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                                               color: Colors.black87,
                                               fontSize: 18,
                                               decoration: TextDecoration.none,
+                                              fontWeight: FontWeight.bold
                                             ),
                                             maxLines: 2,
                                             minFontSize: 10,
@@ -261,6 +274,18 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                                           ),
                                           AutoSizeText(
                                             menuItem.menuJp,
+                                            style: const TextStyle(
+                                              color: Colors.black87,
+                                              fontSize: 14,
+                                              decoration: TextDecoration.none,
+                                            ),
+                                            maxLines: 2,
+                                            minFontSize: 6,
+                                            overflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          AutoSizeText(
+                                            menuItem.price < 0 ? '¥-' : '¥${menuItem.price}',
                                             style: const TextStyle(
                                               color: Colors.black87,
                                               fontSize: 14,
@@ -333,10 +358,16 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    // 表示部分
                     children: [
                       const Icon(Icons.checklist, size: 20),
                       const SizedBox(width: 8),
-                      Text(languageProvider.getLocalizedString('order')),
+                      Text(languageProvider.getLocalizedString('order')),  // 'order' の横に表示する
+                      const SizedBox(width: 8),  // 少し間隔を空ける
+                      Text(
+                        totalPriceString,  // 総合計金額を表示
+                        style: TextStyle(fontSize: 16),  // 太字にして、サイズ調整
+                      ),
                     ],
                   ),
                 ),
@@ -854,7 +885,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                               text: TextSpan(
                                 style: const TextStyle(
                                   color: Colors.blue,
-                                  fontSize: 18,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                   decoration: TextDecoration.underline,
                                   decorationColor: Colors.blue,
@@ -895,6 +926,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                     //   textAlign: TextAlign.center,
                     // ),
                     const SizedBox(height: 10),
+                    // 説明文表示
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child:
@@ -904,8 +936,8 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                             textAlign: TextAlign.center,
                           ),
                     ),
-                    const SizedBox(height: 10),
-                    // 個数選択
+                    const SizedBox(height: 5),
+                    // 個数表示
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -932,17 +964,32 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                         ),
                       ],
                     ),
+                    const SizedBox(height: 5),
                     // 追加ボタン
                     ElevatedButton(
-                    onPressed: () {
-                      // 元のMenuItemのquantityを更新
-                      menuItem.quantity = tempQuantity;
+                      onPressed: () {
+                        // 元のMenuItemのquantityを更新
+                        menuItem.quantity = tempQuantity;
 
-                      // Navigatorで画面を戻す
-                      Navigator.of(context).pop();
-                    },
-                    child: Text(Provider.of<LanguageProvider>(context).getLocalizedString('confirm')),
-                  ),
+                        // Navigatorで画面を戻す
+                        Navigator.of(context).pop();
+                      },
+                      child: RichText(
+                        text: TextSpan(
+                          style: const TextStyle(
+                            fontSize: 16,  // フォントサイズを調整
+                          ),
+                          children: [
+                            TextSpan(
+                              text: '${Provider.of<LanguageProvider>(context).getLocalizedString('confirm')} ',
+                            ),
+                            TextSpan(
+                              text: menuItem.price < 0 ? '¥-' : '¥${menuItem.price * tempQuantity}',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

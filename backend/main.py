@@ -92,7 +92,8 @@ async def process_menus_endpoint(lat: str=Form(...), lng: str=Form(...), file: U
                 "description": item['Description'],
                 "image_urls": image_urls_list,
                 'shop_name': shop_name,
-                "category": item["Category"]
+                "category": item["Category"],
+                "price": item['Price'], 
             })
         
         return {"results": results, "time": time.time() - start_time}
