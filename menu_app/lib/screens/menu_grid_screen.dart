@@ -156,12 +156,8 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                       final menuItem = _filteredItems[index];
                       return GestureDetector(
                         onTap: () {
-                          _showMenuItemDialog(context, menuItem, (updatedMenuItem) {
-                            setState(() {
-                              // 親ウィジェットの状態を更新
-                              widget.menuItems[index] = updatedMenuItem;
-                            });
-                          });
+                          _showMenuItemDialog(context, menuItem
+                          );
                         },
                         child: Container(
                           margin: const EdgeInsets.all(4.0),
@@ -316,7 +312,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                         MaterialPageRoute(
                           builder: (context) {
                             return ChangeNotifierProvider.value(
-                              value: Provider.of<MenuItemsProvider>(context, listen: false),
+                              value: Provider.of<MenuItemsProvider>(context, listen: true),
                               child: OrderScreen(selectedItems: selectedItems),
                             );
                           },
@@ -511,7 +507,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
   bool isUploading = false;
 
   void _showMenuItemDialog(
-    BuildContext context, MenuItem menuItem, Function(MenuItem) onQuantityUpdated) {
+    BuildContext context, MenuItem menuItem) {
     int tempQuantity = menuItem.quantity;
     int currentImageIndex = 0;
     
@@ -942,19 +938,15 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                     ),
                     // 追加ボタン
                     ElevatedButton(
-                      onPressed: () {
-                        onQuantityUpdated(MenuItem(
-                          menuJp: menuItem.menuJp,
-                          menuEn: menuItem.menuEn,
-                          description: menuItem.description,
-                          imageUrls: menuItem.imageUrls,
-                          quantity: tempQuantity,
-                          category: menuItem.category,
-                        ));
-                        Navigator.of(context).pop();
-                      },
-                      child: Text(Provider.of<LanguageProvider>(context).getLocalizedString('confirm')),
-                    ),
+                    onPressed: () {
+                      // 元のMenuItemのquantityを更新
+                      menuItem.quantity = tempQuantity;
+
+                      // Navigatorで画面を戻す
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(Provider.of<LanguageProvider>(context).getLocalizedString('confirm')),
+                  ),
                   ],
                 ),
               ),

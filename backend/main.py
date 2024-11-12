@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse
 from typing import List, Dict, Any, Optional
 from PIL import Image
 from io import BytesIO
-from backend.modules.ocr import get_menus
+from backend.modules.ocr_google_api import get_menus
 from backend.modules.image_search import get_image
 from backend.modules.menu_description import transcribe_and_describe
 from backend.modules.dall_e import generate_image
