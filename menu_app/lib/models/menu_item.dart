@@ -8,6 +8,7 @@ class MenuItem {
   int quantity;
   String selectedLanguage;
   String shopName;
+  String shopUri;
   String category;
   int price;  // 価格をint型として定義
 
@@ -22,6 +23,7 @@ class MenuItem {
     this.quantity = 0,
     this.selectedLanguage = 'English',
     this.shopName = '',
+    this.shopUri = '',
     required this.category,
     this.price = 0,  // 価格が初期化されている
   });
@@ -37,6 +39,7 @@ class MenuItem {
       isBase64Image: json['is_base64_image'] as bool? ?? false,
       quantity: json['quantity'] as int? ?? 0,
       shopName: json['shop_name'] as String? ?? '',
+      shopUri: json['shop_uri'] as String? ?? '',
       category: json['category'] as String? ?? '',
       price: json['price'] as int? ?? 0,  // JSONで価格を受け取る
     );
@@ -53,6 +56,7 @@ class MenuItem {
       'is_base64_image': isBase64Image,
       'quantity': quantity,
       'shop_name': shopName,
+      'shop_uri': shopUri,
       'category': category,
       'price': price, // 価格を保存
     };
@@ -69,6 +73,7 @@ class MenuItem {
       'isBase64Image': isBase64Image,
       'quantity': quantity,
       'shop_name': shopName,
+      'shop_uri': shopUri,
       'category': category,
       'price': price,  // 価格を保存
     };
@@ -85,6 +90,7 @@ class MenuItem {
       isBase64Image: map['isBase64Image'] as bool? ?? false,
       quantity: map['quantity'] as int? ?? 0,
       shopName: map['shop_name'] as String? ?? '',
+      shopUri: map['shop_uri'] as String? ?? '',
       category: map['category'] as String? ?? '',
       price: map['price'] as int? ?? 0,  // 価格をMapから受け取る
     );

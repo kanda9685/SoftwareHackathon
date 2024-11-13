@@ -70,7 +70,7 @@ async def process_menus_endpoint(lat: str=Form(...), lng: str=Form(...), file: U
 
         lat = float(lat)
         lng = float(lng)
-        shop_name = get_nearby_restaurants(lat,lng)
+        shop_name, uri = get_nearby_restaurants(lat,lng)
     
         # 取得した画像URLと他の情報を組み合わせて結果を生成
         for i, item in enumerate(items):
@@ -92,6 +92,7 @@ async def process_menus_endpoint(lat: str=Form(...), lng: str=Form(...), file: U
                 "description": item['Description'],
                 "image_urls": image_urls_list,
                 'shop_name': shop_name,
+                'shop_uri' : uri,
                 "category": item["Category"],
                 "price": item['Price'], 
             })
@@ -209,7 +210,7 @@ def get_nearby_restaurants(lat: float, lng: float):
     headers = {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY,  # ここに実際のAPIキーを挿入
-        "X-Goog-FieldMask": "places.displayName"
+        "X-Goog-FieldMask": "places.displayName,places.googleMapsUri"
     }
 
     # リクエストデータ（JSON形式）
@@ -238,6 +239,7 @@ def get_nearby_restaurants(lat: float, lng: float):
 
     response=response.json()
     nearest_restaurant = response["places"][0]["displayName"]["text"]
-    
+    googlemap_uri = response["places"][0]["googleMapsUri"]
+
     print(nearest_restaurant)
-    return nearest_restaurant
+    return nearest_restaurant,googlemap_uri
