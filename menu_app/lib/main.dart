@@ -102,12 +102,12 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: _selectedIndex == 0
         ? AppBar(
-          title: Text(Provider.of<LanguageProvider>(context).getLocalizedString('MenuBite')), // 動的にメニュータイトルを変更
+          title: Text('MenuBite'), // 動的にメニュータイトルを変更
           actions: [
             TextButton(
               onPressed: () => _showLanguageDialog(context),
               child: Text(
-                Provider.of<LanguageProvider>(context).getLocalizedString('Lang')+':'+Provider.of<LanguageProvider>(context).getLanguageShortCode(), // Langを適用
+                'Lang: ${Provider.of<LanguageProvider>(context).getLanguageShortCode()}', // Langを適用
                 style: const TextStyle(color: Colors.white),
               ),
             ),
