@@ -70,15 +70,15 @@ class LanguageProvider with ChangeNotifier {
   String getMenuTitleOrder() {
     switch (_selectedLanguage) {
       case 'English':
-        return 'front'; // 店名が前
+        return 'front'; 
       case 'Korean':
-        return 'back';  // 「menu」が後ろ
+        return 'front';  
       case 'Chinese':
-        return 'back';  // 「menu」が後ろ
+        return 'front';  
       case 'Spanish':
-        return 'front'; // 店名が前
+        return 'back'; 
       case 'French':
-        return 'back';  // 「menu」が後ろ
+        return 'back';  
       default:
         return 'front'; // デフォルトは店名が前
     }

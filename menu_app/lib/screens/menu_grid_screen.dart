@@ -263,13 +263,13 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                                             menuItem.menuEn,
                                             style: const TextStyle(
                                               color: Colors.black87,
-                                              fontSize: 18,
+                                              fontSize: 16,
                                               decoration: TextDecoration.none,
                                               fontWeight: FontWeight.bold
                                             ),
-                                            maxLines: 2,
-                                            minFontSize: 10,
-                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 2,  // 最大2行まで
+                                            minFontSize: 8,  // 最小フォントサイズを8に設定（任意）
+                                            overflow: TextOverflow.ellipsis,  // オーバーフロー時に省略記号を表示
                                             textAlign: TextAlign.center,
                                           ),
                                           AutoSizeText(
@@ -279,9 +279,9 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                                               fontSize: 14,
                                               decoration: TextDecoration.none,
                                             ),
-                                            maxLines: 2,
-                                            minFontSize: 6,
-                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 2,  // 最大2行まで
+                                            minFontSize: 6,  // 最小フォントサイズを6に設定（任意）
+                                            overflow: TextOverflow.ellipsis,  // オーバーフロー時に省略記号を表示
                                             textAlign: TextAlign.center,
                                           ),
                                           AutoSizeText(
@@ -291,9 +291,9 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                                               fontSize: 14,
                                               decoration: TextDecoration.none,
                                             ),
-                                            maxLines: 2,
-                                            minFontSize: 6,
-                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,  // 価格は1行で表示
+                                            minFontSize: 6,  // 最小フォントサイズを6に設定（任意）
+                                            overflow: TextOverflow.ellipsis,  // オーバーフロー時に省略記号を表示
                                             textAlign: TextAlign.center,
                                           ),
                                         ],
