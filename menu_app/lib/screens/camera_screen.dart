@@ -263,7 +263,7 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
     String selectedLanguage = Provider.of<LanguageProvider>(context, listen: false).selectedLanguage;
 
     final file = await rotateAndSaveImage(File(imagePath));
-    final uploadUrl = 'http://192.168.10.111:8000/process_menus';
+    final uploadUrl = 'https://menubite.proudpebble-333036c6.australiaeast.azurecontainerapps.io/process_menus';
 
     showDialog(
       context: context,
@@ -332,8 +332,19 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(Provider.of<LanguageProvider>(context).getLocalizedString('Preview'))),
-      body: Image.file(File(widget.imagePath), fit: BoxFit.contain),
+      appBar: AppBar(
+        title: Text(
+          Provider.of<LanguageProvider>(context).getLocalizedString('Preview')
+        ),
+      ),
+      body: Center(
+        child: FittedBox(
+          fit: BoxFit.contain, // アスペクト比を維持して画面全体に合わせる
+          child: Image.file(
+            File(widget.imagePath),
+          ),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await uploadImage(widget.imagePath);
