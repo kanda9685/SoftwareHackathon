@@ -263,7 +263,7 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
     String selectedLanguage = Provider.of<LanguageProvider>(context, listen: false).selectedLanguage;
 
     final file = await rotateAndSaveImage(File(imagePath));
-    final uploadUrl = 'https://192.168.10.111:8000/process_menus';
+    final uploadUrl = 'https://menubite.proudpebble-333036c6.australiaeast.azurecontainerapps.io/process_menus';
 
     showDialog(
       context: context,
