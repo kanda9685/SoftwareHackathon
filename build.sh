@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Starting the build process..."
+
 # Flutterのインストール・更新
 if [ ! -d "./flutter" ]; then
   echo "Flutterがインストールされていないため、Flutterをクローンします..."
@@ -20,3 +22,5 @@ echo "依存関係をインストールします..."
 # Flutter Webビルドを実行
 echo "Flutter Webビルドを実行します..."
 ./flutter/bin/flutter build web --release
+
+echo "Build process completed."
