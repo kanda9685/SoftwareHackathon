@@ -10,10 +10,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:menu_app/providers/language_provider.dart';
 import 'package:menu_app/providers/menu_items_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 // 翻訳のエンドポイントを変更する必要がある
 
-String MAIN_URL = "https://menubite.proudpebble-333036c6.australiaeast.azurecontainerapps.io";
+String MAIN_URL = "http://192.168.10.111:8000";
+// String MAIN_URL = "https://menubite.proudpebble-333036c6.australiaeast.azurecontainerapps.io";
 
 // メニュー画面
 class MenuGridScreen extends StatefulWidget {
@@ -38,6 +40,11 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
     if (_categories.isNotEmpty) {
       _filterItemsByCategory(_categories[0]);
     }
+
+    // 初期化時に全menuItemsに対して非同期で画像生成を実行
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _fetchOrGenerateImagesForAllItems(); // 画像生成の非同期処理を開始
+    // });
   }
 
   // タブを初期化する関数
@@ -71,6 +78,64 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
       _initializeTabController();  // TabControllerを再初期化
     });
   }
+
+  Future<String> regenerateImage(String menuName) async {
+    final url = '${MAIN_URL}/generate-image';
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8', // UTF-8 エンコーディングを指定
+      },
+      body: json.encode({
+        'menu_name': menuName
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      print(responseData);
+      return responseData['image_base64'];  // 生成された画像のBase64データを返す
+    } else {
+      throw Exception('Failed to regenerate image');
+    }
+  }
+
+  // imageUrls が空かどうかの判定
+  bool isFirstElementEmptyString(List<String>? imageUrls) {
+    // imageUrls が null ではなく、かつリストの最初の要素が空文字列であるかをチェック
+    if (imageUrls != null && imageUrls.isNotEmpty) {
+      return imageUrls[0] == '';  // 最初の要素が空文字列かどうか
+    }
+    return false;
+  }
+
+  // 各menuItemの画像生成を並行して非同期に実行する関数
+  // void _fetchOrGenerateImagesForAllItems() async {
+  //   for (var menuItem in widget.menuItems) {
+  //     if (isFirstElementEmptyString(menuItem.imageUrls) 
+  //         && menuItem.base64Image.isEmpty 
+  //         && menuItem.isLoading == false) {
+  //       setState(() {
+  //         menuItem.isLoading = true; // 画像生成開始時にisLoadingをtrueに設定
+  //       });
+
+  //       regenerateImage(menuItem.menuJp).then((newImageBase64) {
+  //         setState(() {
+  //           menuItem.isBase64Image = true;
+  //           menuItem.base64Image = newImageBase64;
+  //           menuItem.isLoading = false; // 画像生成後にisLoadingをfalseに戻す
+  //         });
+  //       }).catchError((e) {
+  //         print("Error generating image for ${menuItem.menuJp}: $e");
+  //         setState(() {
+  //           menuItem.isLoading = false; // エラー時にもisLoadingをfalseに設定
+  //         });
+  //       });
+  //     }
+  //   }
+  //   print("All images have been generated.");
+  // }
 
   @override
   void dispose() {
@@ -199,57 +264,54 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                                         topRight: Radius.circular(10),
                                       ),
                                     ),
-                                    child: menuItem.base64Image.isNotEmpty
-                                        ? ClipRRect(
-                                            borderRadius: const BorderRadius.only(
-                                              topLeft: Radius.circular(10),
-                                              topRight: Radius.circular(10),
-                                            ),
-                                            child: Image.memory(
-                                              base64Decode(menuItem.base64Image),
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (context, error, stackTrace) {
-                                                return const Center(
-                                                  child: Icon(
-                                                    Icons.broken_image,
-                                                    color: Colors.grey,
-                                                    size: 30,
-                                                  ),
-                                                );
-                                              },
-                                            ),
+                                    child: menuItem.isLoading
+                                        ? Center( // 画像生成中のローディングインジケーター
+                                            child: CircularProgressIndicator(),
                                           )
-                                        : (menuItem.imageUrls != null && menuItem.imageUrls!.isNotEmpty
-                                            ? ClipRRect(
+                                        : menuItem.base64Image.isNotEmpty
+                                          ? ClipRRect(
+                                              borderRadius: const BorderRadius.only(
+                                                topLeft: Radius.circular(10),
+                                                topRight: Radius.circular(10),
+                                              ),
+                                              child: Image.memory(
+                                                base64Decode(menuItem.base64Image),
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) {
+                                                  return const Center(
+                                                    child: Icon(
+                                                      Icons.broken_image,
+                                                      color: Colors.grey,
+                                                      size: 30,
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            )
+                                          : (menuItem.imageUrls != null && menuItem.imageUrls!.isNotEmpty
+                                              ? ClipRRect(
                                                 borderRadius: const BorderRadius.only(
                                                   topLeft: Radius.circular(10),
                                                   topRight: Radius.circular(10),
                                                 ),
-                                                child: Image.network(
-                                                  menuItem.imageUrls![0], 
+                                                child: CachedNetworkImage(
+                                                  imageUrl: menuItem.imageUrls![0],
                                                   fit: BoxFit.cover,
-                                                  loadingBuilder: (context, child, loadingProgress) {
-                                                    if (loadingProgress == null) {
-                                                      return child;
-                                                    }
-                                                    return const Center(child: CircularProgressIndicator());
-                                                  },
-                                                  errorBuilder: (context, error, stackTrace) {
-                                                    return const Center(
-                                                      child: Icon(
-                                                        Icons.broken_image,
-                                                        color: Colors.grey,
-                                                        size: 30,
-                                                      ),
-                                                    );
-                                                  },
+                                                  placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                                                  errorWidget: (context, url, error) => const Center(
+                                                    child: Icon(
+                                                      Icons.broken_image,
+                                                      color: Colors.grey,
+                                                      size: 30,
+                                                    ),
+                                                  ),
                                                 ),
                                               )
-                                            : const Icon(
-                                                Icons.image,
-                                                color: Colors.grey,
-                                                size: 30,
-                                              )),
+                                              : const Icon(
+                                                  Icons.image,
+                                                  color: Colors.grey,
+                                                  size: 30,
+                                                )),
                                   ),
                                   Expanded(
                                     flex: 1,
@@ -625,28 +687,6 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
       }
     }
 
-    Future<String> regenerateImage(String menuName) async {
-      final url = '${MAIN_URL}/generate-image';
-
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8', // UTF-8 エンコーディングを指定
-        },
-        body: json.encode({
-          'menu_name': menuName
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        print(responseData);
-        return responseData['image_base64'];  // 生成された画像のBase64データを返す
-      } else {
-        throw Exception('Failed to regenerate image');
-      }
-    }
-
   showDialog(
   context: context,
   builder: (BuildContext context) {
@@ -660,8 +700,8 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
           if (menuItem.base64Image.isNotEmpty) {
             totalImagesCount++; // base64Imageがあれば1枚目としてカウント
           }
-          if (menuItem.imageUrls != null && menuItem.imageUrls!.isNotEmpty) {
-            totalImagesCount += menuItem.imageUrls!.length; // imageUrlsの枚数をカウント
+          if (!isFirstElementEmptyString(menuItem.imageUrls)) {
+            totalImagesCount += menuItem.imageUrls!.length;
           }
 
           return Stack(
@@ -684,19 +724,62 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                           Positioned.fill(
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(10),
-                              child: totalImagesCount == 0
-                                  ? Center(
-                                      child: Icon(
-                                        Icons.broken_image,
-                                        color: Colors.grey[700],
-                                        size: 50,
-                                      ),
+                              child: menuItem.isLoading
+                                  ? Center( // 画像生成中のローディングインジケーター
+                                      child: CircularProgressIndicator(),
                                     )
-                                  : menuItem.base64Image.isNotEmpty
-                                    ? currentImageIndex == 0
-                                      ? Image.memory(
-                                          base64Decode(menuItem.base64Image), // Base64データをデコードして表示
+                                  : totalImagesCount == 0
+                                    ? Center(
+                                        child: Icon(
+                                          Icons.broken_image,
+                                          color: Colors.grey[700],
+                                          size: 50,
+                                        ),
+                                      )
+                                    : menuItem.base64Image.isNotEmpty
+                                      ? currentImageIndex == 0
+                                        ? Image.memory(
+                                            base64Decode(menuItem.base64Image), // Base64データをデコードして表示
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return Center(
+                                                child: Icon(
+                                                  Icons.broken_image,
+                                                  color: Colors.grey[700],
+                                                  size: 50,
+                                                ),
+                                              );
+                                            },
+                                          )
+                                        : menuItem.imageUrls != null && menuItem.imageUrls!.isNotEmpty
+                                            ? CachedNetworkImage(
+                                                imageUrl: menuItem.imageUrls![currentImageIndex - 1], // 2枚目以降の画像
+                                                fit: BoxFit.cover,
+                                                placeholder: (context, url) => const Center(child: CircularProgressIndicator()), // ロード中のインジケーター
+                                                errorWidget: (context, url, error) => Center(
+                                                  child: Icon(
+                                                    Icons.broken_image,
+                                                    color: Colors.grey[700],
+                                                    size: 50,
+                                                  ),
+                                                ), // エラー時のアイコン
+                                              )
+                                            : Center(
+                                                child: Icon(
+                                                  Icons.broken_image,
+                                                  color: Colors.grey[700],
+                                                  size: 50,
+                                                ),
+                                              )
+                                      : Image.network(
+                                          menuItem.imageUrls![currentImageIndex], // 2枚目以降の画像
                                           fit: BoxFit.cover,
+                                          loadingBuilder: (context, child, loadingProgress) {
+                                            if (loadingProgress == null) {
+                                              return child;
+                                            }
+                                            return const Center(child: CircularProgressIndicator());
+                                          },
                                           errorBuilder: (context, error, stackTrace) {
                                             return Center(
                                               child: Icon(
@@ -707,52 +790,6 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                                             );
                                           },
                                         )
-                                      : menuItem.imageUrls != null && menuItem.imageUrls!.isNotEmpty
-                                          ? Image.network(
-                                              menuItem.imageUrls![currentImageIndex - 1], // 2枚目以降の画像
-                                              fit: BoxFit.cover,
-                                              loadingBuilder: (context, child, loadingProgress) {
-                                                if (loadingProgress == null) {
-                                                  return child;
-                                                }
-                                                return const Center(child: CircularProgressIndicator());
-                                              },
-                                              errorBuilder: (context, error, stackTrace) {
-                                                return Center(
-                                                  child: Icon(
-                                                    Icons.broken_image,
-                                                    color: Colors.grey[700],
-                                                    size: 50,
-                                                  ),
-                                                );
-                                              },
-                                            )
-                                          : Center(
-                                              child: Icon(
-                                                Icons.broken_image,
-                                                color: Colors.grey[700],
-                                                size: 50,
-                                              ),
-                                            )
-                                    : Image.network(
-                                        menuItem.imageUrls![currentImageIndex], // 2枚目以降の画像
-                                        fit: BoxFit.cover,
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null) {
-                                            return child;
-                                          }
-                                          return const Center(child: CircularProgressIndicator());
-                                        },
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return Center(
-                                            child: Icon(
-                                              Icons.broken_image,
-                                              color: Colors.grey[700],
-                                              size: 50,
-                                            ),
-                                          );
-                                        },
-                                      )
                             )
                           ),
                           // 左矢印ボタン（Base64がない場合、imageUrlsがある場合に表示）
@@ -761,13 +798,21 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                               left: 5,
                               top: 0,
                               bottom: 0,
-                              child: IconButton(
-                                icon: Icon(Icons.arrow_back, color: Colors.black54),
-                                onPressed: () {
-                                  setState(() {
-                                    currentImageIndex = (currentImageIndex - 1) % totalImagesCount;
-                                  });
-                                },
+                              child: Container(
+                                width: 40, // 幅を指定
+                                height: 40, // 高さを指定
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.4), // 半透明の白背景
+                                  shape: BoxShape.circle, // 丸い背景
+                                ),
+                                child: IconButton(
+                                  icon: Icon(Icons.arrow_back, color: Colors.black), // 黒い矢印アイコン
+                                  onPressed: () {
+                                    setState(() {
+                                      currentImageIndex = (currentImageIndex + 1) % totalImagesCount;
+                                    });
+                                  },
+                                ),
                               ),
                             ),
                           // 右矢印ボタン（Base64がない場合、imageUrlsがある場合に表示）
@@ -776,19 +821,27 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                               right: 5,
                               top: 0,
                               bottom: 0,
-                              child: IconButton(
-                                icon: Icon(Icons.arrow_forward, color: Colors.black54),
-                                onPressed: () {
-                                  setState(() {
-                                    currentImageIndex = (currentImageIndex + 1) % totalImagesCount;
-                                  });
-                                },
+                              child: Container(
+                                width: 40, // 幅を指定
+                                height: 40, // 高さを指定
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.4), // 半透明の白背景
+                                  shape: BoxShape.circle, // 丸い背景
+                                ),
+                                child: IconButton(
+                                  icon: Icon(Icons.arrow_forward, color: Colors.black), // 黒い矢印アイコン
+                                  onPressed: () {
+                                    setState(() {
+                                      currentImageIndex = (currentImageIndex + 1) % totalImagesCount;
+                                    });
+                                  },
+                                ),
                               ),
                             ),
                           // 再生成ボタン（右下）
                           Positioned(
-                            right: 5,
-                            bottom: 5,
+                            right: 0,
+                            bottom: 0,
                             child: IconButton(
                               icon: AnimatedContainer(
                                 padding: const EdgeInsets.all(4.0),  // アイコンの周りの余白
@@ -839,6 +892,10 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
 
                                 try {
                                   // API呼び出しを行い、画像を再生成
+                                  // setState(() {
+                                  //   menuItem.isLoading = true; // 画像生成開始時にisLoadingをtrueに設定
+                                  // });
+
                                   String newImageBase64 = await regenerateImage(menuItem.menuJp);
 
                                   setState(() {
@@ -855,6 +912,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
 
                                 setState(() {
                                   _isRotating = false;
+                                  // menuItem.isLoading = false;
                                 });
                               },
                             ),

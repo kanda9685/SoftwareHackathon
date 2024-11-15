@@ -40,14 +40,6 @@ async def transcribe_and_describe(dish_names: list[str], language: str = "englis
         list[dict[str, str]]: 各料理名の日本語、翻訳した言語、説明文を含む辞書のリスト。
     """
     # プロンプトのテンプレート
-    # prompt = (
-    #     "Translate the following list of Japanese dish names to {language}, and provide a brief description for each dish in {language}. "
-    #     "Please include all food and beverage items, but exclude any items that are clearly not related to food or beverages (e.g., generic terms, non-food items, or meal courses). "
-    #     "Correct any minor typos if needed (e.g., '天ぶら' should be corrected to '天ぷら'). For each dish, categorize it into one of the following categories: "
-    #     "Main Dishes, Side Dishes, Desserts, Drinks. Please translate the category name into {language} as well. "
-    #     "Return each translation and description in the format 'Japanese name | Translated name | Description | Category'. "
-    #     "For example, 'いちごのパフェ | strawberry parfait | a parfait made with strawberries and cream. | Desserts'.\n\n"
-    # )
     prompt = (
         "Translate the following list of Japanese dish names to {language}, and provide a brief description for each dish in {language}. "
         "Please include all food and beverage items, but exclude any items that are clearly not related to food or beverages (e.g., generic terms, non-food items, or meal courses). "
@@ -60,6 +52,15 @@ async def transcribe_and_describe(dish_names: list[str], language: str = "englis
         "Return each translation and description in the format 'Japanese name | Translated name | Description | Category | Price'. "
         "For example, 'いちごのパフェ | strawberry parfait | a parfait made with strawberries and cream. | Desserts | 600'.\n\n"
     )
+    # prompt = (
+    #     "Translate each Japanese dish name in the list to {language} and provide a brief description. "
+    #     "Include only food and beverage items, fixing minor typos if needed (e.g., '天ぶら' to '天ぷら'). "
+    #     "Categorize each dish as Main Dishes, Side Dishes, Desserts, or Drinks, translating the category names into {language}. "
+    #     "If category words (e.g., 'デザート', '飲み物') are present in the input, use them to guide categorization; otherwise, use the best fit. "
+    #     "If a price is listed (e.g., '500円'), include it as a numerical value without the unit, using '-1' if no price is detected. "
+    #     "Format each item as 'Japanese name | Translated name | Description | Category | Price'. "
+    #     "Example: 'いちごのパフェ | strawberry parfait | a parfait made with strawberries and cream. | Desserts | 600'."
+    # )
 
     # 言語設定に基づいてプロンプトのプレースホルダを置き換える
     prompt = prompt.format(language=language)
