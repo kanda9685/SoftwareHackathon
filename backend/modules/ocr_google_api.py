@@ -45,7 +45,7 @@ async def split_text_into_list(text: str) -> List[str]:
     Returns:
         List[str]: 分割された文字列のリスト。
     """
-    text_list = re.split(r'\n|\s{2,}', text)  # 改行または二つ以上の空白で分割
+    text_list = re.split(r'\n', text)  # 改行または二つ以上の空白で分割
     return [item for item in text_list if item]  # 空の文字列を除外
 
 async def get_menus(image: Image) -> List[str]:
@@ -59,6 +59,7 @@ async def get_menus(image: Image) -> List[str]:
     """
     # OCRを実行
     ocr_text = await ocr_google_cloud_vision(image)
+    print("text:", ocr_text)
     # 得られた文字列をリストに分割
     text_list = await split_text_into_list(ocr_text)
     return text_list

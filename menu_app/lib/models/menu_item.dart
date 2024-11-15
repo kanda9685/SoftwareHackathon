@@ -5,12 +5,13 @@ class MenuItem {
   List<String>? imageUrls;
   String base64Image;
   bool isBase64Image;
+  bool isLoading; // 画像生成中かどうかを示すフラグ
   int quantity;
   String selectedLanguage;
   String shopName;
   String shopUri;
   String category;
-  int price;  // 価格をint型として定義
+  int price;
 
   // コンストラクタ
   MenuItem({
@@ -20,6 +21,7 @@ class MenuItem {
     this.imageUrls,
     this.base64Image = '',
     this.isBase64Image = false,
+    this.isLoading = false, // 初期状態では生成中ではない
     this.quantity = 0,
     this.selectedLanguage = 'English',
     this.shopName = '',
@@ -37,6 +39,7 @@ class MenuItem {
       imageUrls: (json['image_urls'] as List<dynamic>?)?.cast<String>(),
       base64Image: json['base64_image'] as String? ?? '',
       isBase64Image: json['is_base64_image'] as bool? ?? false,
+      isLoading: json['is_loading'] as bool? ?? false, // isLoadingの値も反映
       quantity: json['quantity'] as int? ?? 0,
       shopName: json['shop_name'] as String? ?? '',
       shopUri: json['shop_uri'] as String? ?? '',
@@ -54,6 +57,7 @@ class MenuItem {
       'image_urls': imageUrls,
       'base64_image': base64Image,
       'is_base64_image': isBase64Image,
+      'is_loading': isLoading, // isLoadingを保存
       'quantity': quantity,
       'shop_name': shopName,
       'shop_uri': shopUri,
@@ -71,6 +75,7 @@ class MenuItem {
       'imageUrls': imageUrls,
       'base64Image': base64Image,
       'isBase64Image': isBase64Image,
+      'isLoading': isLoading, // isLoadingを追加
       'quantity': quantity,
       'shop_name': shopName,
       'shop_uri': shopUri,
@@ -88,6 +93,7 @@ class MenuItem {
       imageUrls: (map['imageUrls'] as List<dynamic>?)?.cast<String>(),
       base64Image: map['base64Image'] as String? ?? '',
       isBase64Image: map['isBase64Image'] as bool? ?? false,
+      isLoading: map['isLoading'] as bool? ?? false, // isLoadingをMapから受け取る
       quantity: map['quantity'] as int? ?? 0,
       shopName: map['shop_name'] as String? ?? '',
       shopUri: map['shop_uri'] as String? ?? '',

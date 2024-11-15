@@ -154,6 +154,13 @@ Future<void> _launchGoogleMap(String url) async {
             onPressed: () => _showDeleteConfirmationDialog(context),
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(1.0), // 横線の高さを指定
+          child: Container(
+            color: Colors.grey, // 横線の色を指定
+            height: 0.5, // 横線の太さを指定
+          ),
+        ),
       ),
       body: orderHistory.isEmpty
           ? Center(child: Text(languageProvider.getLocalizedString('no_order_history')))
