@@ -9,10 +9,13 @@ class LanguageProvider with ChangeNotifier {
   // コンストラクタでset_languageを呼び出す
   LanguageProvider() : _selectedLanguage = _setLanguage();
 
-  // 現在のロケールに応じて言語を設定
+  // デバイスのロケールに応じて言語を設定
   static String _setLanguage() {
     Locale deviceLocale = window.locale;
-    if (deviceLocale.languageCode == 'zh') {
+    
+    if (deviceLocale.languageCode == 'ja') {
+      return "Japanese";
+    } else if (deviceLocale.languageCode == 'zh') {
       return "Chinese";
     } else if (deviceLocale.languageCode == 'ko') {
       return "Korean";
@@ -33,6 +36,8 @@ class LanguageProvider with ChangeNotifier {
   // 言語に応じた省略形を返す
   String getLanguageShortCode() {
     switch (_selectedLanguage) {
+      case 'Japanese':
+        return 'Ja';
       case 'English':
         return 'En';
       case 'Korean':
@@ -51,6 +56,8 @@ class LanguageProvider with ChangeNotifier {
   // 言語に応じたフルネームを返す
   String getLanguageFullName(String language) {
     switch (language) {
+      case 'Japanese':
+        return 'Japanese';
       case 'English':
         return 'English';
       case 'Korean':
@@ -69,6 +76,8 @@ class LanguageProvider with ChangeNotifier {
     // 言語に応じた店名と「menu」の順番を決定するメソッド
   String getMenuTitleOrder() {
     switch (_selectedLanguage) {
+      case 'Japanese':
+        return 'front';
       case 'English':
         return 'front'; 
       case 'Korean':
@@ -87,6 +96,8 @@ class LanguageProvider with ChangeNotifier {
   // 言語ごとの文字列を返すメソッド
   String getLocalizedString(String key) {
     switch (_selectedLanguage) {
+      case 'Japanese':
+        return _japaneseStrings[key] ?? key;
       case 'English':
         return _englishStrings[key] ?? key;
       case 'Korean':
@@ -102,6 +113,44 @@ class LanguageProvider with ChangeNotifier {
     }
   }
 
+  // 日本語の文字列
+  final Map<String, String> _japaneseStrings = {
+    'menu': 'のメニュー',
+    '_menu': 'メニュー画面',
+    'MenuBite' : 'MenuBite',
+    'Lang' : '言語',
+    'camera': 'カメラ',
+    'order_history': '注文履歴',
+    'Order_Phrase' : '注文画面',
+    'language': '言語',
+    'select_language': '言語選択',
+    'cancel': 'キャンセル',
+    'confirm': '確認',
+    'loading': '読み込み中...',
+    'menu items': 'メニュー',
+    'show_to_staff': 'この画面を店員に見せてください。',
+    'I_would_like_to_order_the_dishes.': '(私はこの料理を注文したいです。)',
+    'order_completed': '注文完了',
+    'no_order_history': '注文履歴はありません。',
+    'order': '注文',
+    'no_menu': 'メニューはありません。',
+    'thank_you': 'ありがとうございます!',
+    'image_uploaded': '写真が送信されました。',
+    'ok': '了解',
+    'error': 'エラー',
+    'failed_to_upload_image': '送信に失敗しました。もう一度お試しください。',
+    'upload_image': '写真の送信',
+    'delete': '削除する',
+    'delete_all_menus': 'メニューの削除',
+    'delete_all_menus_confirmation': 'すべてのメニューを削除しますか？',
+    'Sorry.':'申し訳ありません。',
+    'Faildish':'料理が見つかりませんでした。もう一度お試しください。',
+    'Preview' : 'プレビュー',
+    'dontdelete': '削除しない',
+    'delete_all_menus_forlang': '既に存在するメニューをすべて削除しますか？',
+    'generating': 'AI画像を生成しています...',
+  };
+
   // 英語の文字列
   final Map<String, String> _englishStrings = {
     'menu': '\'s Menu',
@@ -110,7 +159,7 @@ class LanguageProvider with ChangeNotifier {
     'Lang' : 'Lang',
     'camera': 'Camera',
     'order_history': 'Order History',
-    'Order_Phrase' : 'Order Phrase',
+    'Order_Phrase' : 'Order Screen',
     'language': 'Language',
     'select_language': 'Select Language',
     'cancel': 'Cancel',
@@ -148,7 +197,7 @@ class LanguageProvider with ChangeNotifier {
     'Lang' : '언어',
     'camera': '카메라',
     'order_history': '주문 내역',
-    'Order_Phrase' : '주문 표현',
+    'Order_Phrase' : '주문 화면',
     'language': '언어',
     'select_language': '언어 선택',
     'cancel': '취소',
@@ -186,7 +235,7 @@ class LanguageProvider with ChangeNotifier {
     'Lang' : '语',
     'camera': '相机',
     'order_history': '订单历史',
-    'Order_Phrase' : '点单用语',
+    'Order_Phrase' : '订单页面',
     'language': '语言',
     'select_language': '选择语言',
     'cancel': '取消',
@@ -224,7 +273,7 @@ class LanguageProvider with ChangeNotifier {
     'Lang' : 'Idioma',
     'camera': 'Cámara',
     'order_history': 'Historial de pedidos',
-    'Order_Phrase' : 'Frase de Pedido',
+    'Order_Phrase' : 'Pantalla de pedido',
     'language': 'Idioma',
     'select_language': 'Seleccionar idioma',
     'cancel': 'Cancelar',
@@ -262,7 +311,7 @@ class LanguageProvider with ChangeNotifier {
     'Lang' : 'Lang',
     'camera': 'Caméra',
     'order_history': 'Historique des commandes',
-    'Order_Phrase' : 'Phrase de Commande',
+    'Order_Phrase' : 'Écran de commande',
     'language': 'Langue',
     'select_language': 'Sélectionner la langue',
     'cancel': 'Annuler',
