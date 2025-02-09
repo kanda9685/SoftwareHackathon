@@ -15,14 +15,6 @@ class OrderScreen extends StatelessWidget {
 
   const OrderScreen({Key? key, required this.selectedItems}) : super(key: key);
 
-  Future<void> _saveOrderHistory() async {
-    final prefs = await SharedPreferences.getInstance();
-    List<String> orderHistory = prefs.getStringList('orderHistory') ?? [];
-    String newOrder = jsonEncode(selectedItems.map((item) => item.toJson()).toList());
-    orderHistory.add(newOrder);
-    await prefs.setStringList('orderHistory', orderHistory);
-  }
-
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context); // Access LanguageProvider
@@ -61,24 +53,6 @@ class OrderScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // メニューの前のメッセージ（日本語と英語を併記）
-                  Text(
-                    '次の料理をお願いします。',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 5),
-                  AutoSizeText(
-                    languageProvider.getLocalizedString('I_would_like_to_order_the_dishes.'), // Localized string
-                    style: TextStyle(fontSize: 14, color: Colors.black),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 10),
-                  const Divider(
-                    color: Colors.grey, 
-                    thickness: 1.5,
-                  ),
-                  const SizedBox(height: 10),
                   // メニューリストの表示（英語と日本語を併記）
                   ...selectedItems.map((item) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -119,7 +93,6 @@ class OrderScreen extends StatelessWidget {
             Center(
               child: ElevatedButton.icon(
                 onPressed: () async {
-                  await _saveOrderHistory();  // Save order history
 
                   Provider.of<MenuItemsProvider>(context, listen: false).resetQuantities();
 
@@ -130,7 +103,7 @@ class OrderScreen extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => MyHomePage(
                         camera: Provider.of<CameraProvider>(context).camera,
-                        selectedIndex: 2,
+                        selectedIndex: 1,
                       ),
                     ),
                   );
