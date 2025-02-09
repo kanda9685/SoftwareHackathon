@@ -146,18 +146,6 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
 
-    // 総合計金額を計算
-    int totalPrice = 0;
-    for (var menuItem in widget.menuItems) {
-      // 価格が負でない場合のみ計算に加算
-      if (menuItem.price >= 0) {
-        totalPrice += menuItem.price * menuItem.quantity;
-      }
-    }
-
-    // 合計金額が負の場合は "￥-xxx" という形式で表示
-    String totalPriceString = totalPrice < 0 ? '￥-${totalPrice.abs()}' : '￥${totalPrice}';
-
     return Scaffold(
       appBar: AppBar(
         title: widget.menuItems.isEmpty || widget.menuItems[0].shopName.isEmpty
@@ -192,7 +180,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
         ),
       ),
       body: widget.menuItems.isEmpty
-          ? Center(child: Text('No menu available'))
+          ? Center(child: Text(''))
           : Column(
               children: [
                 // タブバーを追加
@@ -345,18 +333,6 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                                             overflow: TextOverflow.ellipsis,  // オーバーフロー時に省略記号を表示
                                             textAlign: TextAlign.center,
                                           ),
-                                          AutoSizeText(
-                                            menuItem.price < 0 ? '¥-' : '¥${menuItem.price}',
-                                            style: const TextStyle(
-                                              color: Colors.black87,
-                                              fontSize: 14,
-                                              decoration: TextDecoration.none,
-                                            ),
-                                            maxLines: 1,  // 価格は1行で表示
-                                            minFontSize: 6,  // 最小フォントサイズを6に設定（任意）
-                                            overflow: TextOverflow.ellipsis,  // オーバーフロー時に省略記号を表示
-                                            textAlign: TextAlign.center,
-                                          ),
                                         ],
                                       ),
                                     ),
@@ -424,11 +400,6 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                       const Icon(Icons.checklist, size: 20),
                       const SizedBox(width: 8),
                       Text(languageProvider.getLocalizedString('order')),  // 'order' の横に表示する
-                      const SizedBox(width: 8),  // 少し間隔を空ける
-                      Text(
-                        totalPriceString,  // 総合計金額を表示
-                        style: TextStyle(fontSize: 16),  // 太字にして、サイズ調整
-                      ),
                     ],
                   ),
                 ),
@@ -497,7 +468,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
               width: double.maxFinite,
               child: ListView(
                 shrinkWrap: true,
-                children: <String>['English', 'Korean', 'Chinese', 'Spanish', 'French']
+                children: <String>['Japanese', 'English', 'Korean', 'Chinese', 'Spanish', 'French']
                     .map((String language) {
                   return ListTile(
                     title: Text(language),
@@ -1039,9 +1010,6 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
                           children: [
                             TextSpan(
                               text: '${Provider.of<LanguageProvider>(context).getLocalizedString('confirm')} ',
-                            ),
-                            TextSpan(
-                              text: menuItem.price < 0 ? '¥-' : '¥${menuItem.price * tempQuantity}',
                             ),
                           ],
                         ),
