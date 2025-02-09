@@ -17,3 +17,6 @@ menu_app/pubspec.lock
 menu_app/test/widget_test.dart
 menu_app/windows/flutter/generated_plugin_registrant.cc
 menu_app/windows/flutter/generated_plugins.cmake
+
+#APIキー
+backend/utils/.env
