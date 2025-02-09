@@ -73,7 +73,6 @@ class _MyHomePageState extends State<MyHomePage> {
     _screens = [
       CameraScreen(camera: widget.camera, addMenuItems: addMenuItems, updateIndex: updateIndex),
       MenuGridScreen(menuItems: menuItems),
-      const OrderHistoryScreen(),
       OrderScreen(selectedItems: menuItems), // OrderScreen を追加
     ];
     _selectedIndex = widget.selectedIndex;
@@ -138,10 +137,6 @@ class _MyHomePageState extends State<MyHomePage> {
               BottomNavigationBarItem(
                 icon: Icon(Icons.grid_on),
                 label: Provider.of<LanguageProvider>(context).getLocalizedString('menu items'), // 言語に基づくボタンラベル
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.history),
-                label: Provider.of<LanguageProvider>(context).getLocalizedString('order_history'), // 言語に基づくボタンラベル
               ),
             ],
             currentIndex: _selectedIndex,
@@ -213,7 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 width: double.maxFinite,
                 child: ListView(
                   shrinkWrap: true,
-                  children: <String>['English', 'Korean', 'Chinese', 'Spanish', 'French']
+                  children: <String>['Japanese','English', 'Korean', 'Chinese', 'Spanish', 'French']
                       .map((String language) {
                     return ListTile(
                       title: Text(Provider.of<LanguageProvider>(context, listen: false).getLanguageFullName(language)), // フルネームを表示
@@ -260,41 +255,4 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future<void> _updateLanguageForMenuItems() async {
-    String selectedLanguage = Provider.of<LanguageProvider>(context, listen: false).selectedLanguage;
-    final url = 'http://192.168.10.111:8000/translate_menus';
-
-    try {
-      final menuJpList = menuItems.map((item) => item.menuJp).toList();
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: json.encode({
-          'menu_items': menuJpList,
-          'language': selectedLanguage,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final results = data['results'] as List;
-
-        setState(() {
-          for (int i = 0; i < menuItems.length; i++) {
-            menuItems[i].menuEn = results[i]['menu_en'];
-            menuItems[i].description = results[i]['description'];
-            menuItems[i].selectedLanguage = selectedLanguage;
-          }
-        });
-      } else {
-        print("Request failed with status: ${response.statusCode}");
-        print("Response body: ${response.body}");
-        throw Exception('Failed to update menu items');
-      }
-    } catch (e) {
-      print('Error updating language for menu items: $e');
-    }
-  }
 }
