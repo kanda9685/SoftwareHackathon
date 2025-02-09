@@ -14,8 +14,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 // 翻訳のエンドポイントを変更する必要がある
 
-String MAIN_URL = "http://192.168.10.111:8000";
-// String MAIN_URL = "https://menubite.proudpebble-333036c6.australiaeast.azurecontainerapps.io";
+String MAIN_URL = "https://menubite2.uc.r.appspot.com";
 
 // メニュー画面
 class MenuGridScreen extends StatefulWidget {
