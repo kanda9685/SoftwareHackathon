@@ -16,10 +16,9 @@ from pathlib import Path
 import asyncio
 from urllib.parse import unquote
 import math
+from backend.utils.config import GOOGLE_MAPS_API_KEY
 
 app = FastAPI()
-
-MAIN_URL = "http://172.16.0.178:8000"
 
 # CORSの設定
 app.add_middleware(
@@ -33,7 +32,6 @@ app.add_middleware(
 logging.basicConfig(level=logging.ERROR, encoding="utf-8")
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
-
 
 @app.post("/process_menus", response_model=Dict[str, Any])
 async def process_menus_endpoint(lat: str=Form(...), lng: str=Form(...), file: UploadFile = File(...), language: str = Form(...)):
@@ -77,13 +75,8 @@ async def process_menus_endpoint(lat: str=Form(...), lng: str=Form(...), file: U
             image_url = image_urls[i]  # 非同期で取得した画像URL
             
             image_urls_list = []
-            # image_url2 = f"{MAIN_URL}/uploaded_images/menu1/{item['Menu_jp']}/{item['Menu_jp']}_1.jpg"
-            # image_url3 = f"{MAIN_URL}/uploaded_images/menu1/{item['Menu_jp']}/{item['Menu_jp']}_2.jpg"
-            # image_url4 = f"{MAIN_URL}/uploaded_images/menu1/{item['Menu_jp']}/{item['Menu_jp']}_3.jpg"
+
             image_urls_list.append(image_url)
-            # image_urls_list.append(image_url2)
-            # image_urls_list.append(image_url3)
-            # image_urls_list.append(image_url4)
             
             # 結果に追加
             results.append({
@@ -158,52 +151,9 @@ async def generate_image_endpoint(request: Request):
         "image_base64": image_data_base64["image_base64"]
     }
 
-
-# 画像ファイルが保存されているディレクトリ（要変更）
-IMAGE_DIRECTORY = "C:\\Users\\meron\\Desktop\\SoftwareHackathon\\backend\\uploaded_images"
-
-
-@app.get("/uploaded_images/{shop_name}/{folder_name}/{image_name}")
-async def get_localimage(image_name: str, folder_name: str, shop_name: str):
-
-    image_path = os.path.join(IMAGE_DIRECTORY,shop_name,folder_name,image_name)
-
-    if os.path.exists(image_path):
-        return FileResponse(image_path)
-    return ""
-
-@app.post("/image_upload")
-async def upload_image(file: UploadFile = File(...), file_name: str = Form(...)):
-    try:
-        # 似た名前のフォルダを探す
-        similar_folders = [f for f in os.listdir(IMAGE_DIRECTORY) if file_name in f]
-        if similar_folders:
-            # 既存の似たフォルダに保存
-            target_folder = os.path.join(IMAGE_DIRECTORY, similar_folders[0])
-        else:
-            # 新しいフォルダを作成
-            target_folder = os.path.join(IMAGE_DIRECTORY, file_name)
-            Path(target_folder).mkdir(parents=True, exist_ok=True)
-        
-        # ファイル名が重複しないように連番を付与
-        counter = 1
-        save_path = os.path.join(target_folder, f"{file_name}_{counter}.jpg")
-        while os.path.exists(save_path):
-            counter += 1
-            save_path = os.path.join(target_folder, f"{file_name}_{counter}.jpg")
-
-        # アップロードされたファイルを開いて保存
-        with open(save_path, "wb") as buffer:
-            buffer.write(await file.read())
-
-    except Exception as e:
-        logging.error("Error in uploading image: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
-
 def get_nearby_restaurants(lat: float, lng: float):
 
-    # Google Maps APIのURLとAPIキーを設定
-    GOOGLE_MAPS_API_KEY = "AIzaSyDpAo2dH8sFpPdcyhObO02txOgXOJGvqoA"
+    # Google Maps APIのURL
     GOOGLE_MAPS_API_URL = "https://places.googleapis.com/v1/places:searchNearby"
 
     # ヘッダーの設定
