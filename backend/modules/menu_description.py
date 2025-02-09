@@ -7,22 +7,11 @@ import re
 # OpenAIクライアントの初期化
 client = OpenAI(api_key=CHATGPT_API_KEY)
 
-def remove_before_first_japanese(text: str) -> str:
-    # 半角数字、全角数字、英字を除外
-    text = re.sub(r'[0-9a-zA-Z１-９]', '', text)  # 半角数字、英字、全角数字を除去
+def remove_letters(text: str) -> str:
+    # 半角数字、全角数字、記号を除外
+    text = re.sub(r'[0-9１-９.]', '', text)  
 
-    # 日本語の文字を含むパターン (ひらがな、カタカナ、漢字)
-    pattern = r'[\u3040-\u30ff\u4e00-\u9faf\u3400-\u4dbf\u20000-\u2a6df]'
-    
-    # 正規表現で最初の日本語文字を見つける
-    match = re.search(pattern, text)
-    
-    if match:
-        # 最初の日本語文字が見つかった場合、その位置以降を返す
-        return text[match.start():]
-    else:
-        # 日本語が含まれていない場合、そのままテキストを返す
-        return text
+    return text
     
 def remove_double_quotes(text: str) -> str:
     # ダブルクオーテーションを除外
@@ -86,7 +75,7 @@ async def transcribe_and_describe(dish_names: list[str], language: str = "englis
                 try:
                     menu_jp, menu_translated, description, category, price = [part.strip() for part in line.split("|")]
                     results.append({
-                        "Menu_jp": menu_jp,
+                        "Menu_jp": remove_letters(menu_jp),
                         "Menu_en": menu_translated,
                         "Description": description,
                         "Category": category,
@@ -100,19 +89,3 @@ async def transcribe_and_describe(dish_names: list[str], language: str = "englis
     except Exception as e:
         print(f"An error occurred: {e}")
         return []
-
-# 使用例
-if __name__ == "__main__":
-    # dishes = ["寿司", "天ふら", "ラーマン", "こんにちは", "パスタあ", "ドーナッッ", "ハイボール", "600円", "Menu", "前菜"]
-    dishes = ["寿司", "500円", "ラーマン", "200円", "パスタあ", "200円", "ハイボール", "600円", "マグロ"]
-    results = asyncio.run(transcribe_and_describe(dishes, language="English"))
-
-    # 元のリストと処理後のリストの比較
-    # print(f"\n元のリスト: {dishes}")
-    
-    menus_processed = []
-    for result in results:
-        menus_processed.append(result['Menu_jp'])
-        print(f"Menu_jp: {result['Menu_jp']}, Menu_en: {result['Menu_en']}, Description: {result['Description']}, Category: {result['Category']} Price: {result['Price']}\n")
-
-    # print(f"\n処理後のリスト: {menus_processed}")
