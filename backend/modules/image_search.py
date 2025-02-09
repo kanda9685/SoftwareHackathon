@@ -30,7 +30,6 @@ async def search_image_url(service, query):
             service.cse().list,
             q=query,
             cx=CSE_ID,
-            lr='lang_ja',
             searchType='image',
             rights='cc_publicdomain',  # パブリックドメインの画像のみ
             num=1  # 1枚のみ取得

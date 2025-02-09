@@ -30,14 +30,14 @@ def remove_double_quotes(text: str) -> str:
 
 async def transcribe_and_describe(dish_names: list[str], language: str = "english") -> list[dict[str, str]]:
     """
-    日本語の料理名リストを指定された言語で翻訳し、それぞれの簡単な説明を提供します。
+    料理名のリストを指定された言語で翻訳し、それぞれの簡単な説明を提供します。
 
     Args:
-        dish_names (list[str]): 料理名（日本語）のリスト。
-        language (str): 翻訳する言語。'english', 'chinese', 'korean'のいずれか。
+        dish_names (list[str]): 料理名のリスト。
+        language (str): 翻訳する言語。'Japanese', 'english', 'chinese', 'korean', 'Spanish', 'French'のいずれか。
 
     Returns:
-        list[dict[str, str]]: 各料理名の日本語、翻訳した言語、説明文を含む辞書のリスト。
+        list[dict[str, str]]: 各料理名の元言語、翻訳した言語、説明文を含む辞書のリスト。
     """
     # プロンプトのテンプレート
     # prompt = (
@@ -53,19 +53,19 @@ async def transcribe_and_describe(dish_names: list[str], language: str = "englis
     #     "For example, 'いちごのパフェ | strawberry parfait | a parfait made with strawberries and cream. | Desserts | 600'.\n\n"
     # )
     prompt = (
-        "Translate each Japanese dish name in the list to {language} and provide a brief description in {language}. "
-        "Include only food and beverage items, fixing minor typos if needed (e.g., '天ぶら' to '天ぷら'). "
+        "Translate each dish name in the list to {language} and provide a brief description in {language}. "
+        "Include only food and beverage items, fixing minor typos if needed. "
         "Categorize each dish as Main Dishes, Side Dishes, Desserts, or Drinks, translating the category names into {language}. "
-        "If category words (e.g., 'デザート', '飲み物') are present in the input, use them to guide categorization; otherwise, use the best fit. "
-        "If a price is listed (e.g., '500円'), include it as a numerical value without the unit, using '-1' if no price is detected. "
-        "Format each item as 'Japanese name | Translated name | Description | Category | Price'. "
+        "If category words are present in the input, use them to guide categorization; otherwise, use the best fit. "
+        "If a price is listed, include it as a numerical value without the unit, using '-1' if no price is detected. "
+        "Format each item as 'Dish name | Translated name | Description | Category | Price'. "
         "Example: 'いちごのパフェ | strawberry parfait | a parfait made with strawberries and cream. | Desserts | 600'."
     )
 
     # 言語設定に基づいてプロンプトのプレースホルダを置き換える
     prompt = prompt.format(language=language)
 
-    # 日本語料理名をプロンプトに追加
+    # 元の料理名をプロンプトに追加
     prompt += "\n".join(dish_names)
 
     try:
@@ -86,7 +86,7 @@ async def transcribe_and_describe(dish_names: list[str], language: str = "englis
                 try:
                     menu_jp, menu_translated, description, category, price = [part.strip() for part in line.split("|")]
                     results.append({
-                        "Menu_jp": remove_before_first_japanese(menu_jp),
+                        "Menu_jp": menu_jp,
                         "Menu_en": menu_translated,
                         "Description": description,
                         "Category": category,
