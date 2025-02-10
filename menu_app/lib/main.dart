@@ -200,52 +200,77 @@ class _MyHomePageState extends State<MyHomePage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return StatefulBuilder(  // StatefulBuilderを使用して状態管理を行う
+        return StatefulBuilder(  // StatefulBuilder to manage the state
           builder: (BuildContext context, StateSetter setState) {
             return AlertDialog(
-              title: Text(Provider.of<LanguageProvider>(context, listen: false).getLocalizedString('select_language')), // 言語選択タイトル
+              title: Text(
+                Provider.of<LanguageProvider>(context, listen: false).getLocalizedString('select_language')
+              ), // Language selection title
               content: Container(
                 width: double.maxFinite,
-                child: ListView(
-                  shrinkWrap: true,
-                  children: <String>['Japanese','English', 'Korean', 'Chinese', 'Spanish', 'French']
-                      .map((String language) {
-                    return ListTile(
-                      title: Text(Provider.of<LanguageProvider>(context, listen: false).getLanguageFullName(language)), // フルネームを表示
-                      trailing: _tempSelectedLanguage == language
-                          ? const Icon(Icons.check, color: Colors.blue)
-                          : null,
-                      onTap: () {
-                        setState(() {
-                          _tempSelectedLanguage = language;  // タップした言語をセット
-                        });
-                      },
-                    );
-                  }).toList(),
+                // Constrain the height of the dialog content
+                constraints: BoxConstraints(maxHeight: 300), // Set a max height for the content
+                child: Scrollbar(  // Add a Scrollbar around the ListView
+                  child: ListView(
+                    shrinkWrap: true,  // Shrink the list to fit its children
+                    children: <String>[
+                      'English',
+                      'Korean',
+                      'Chinese',
+                      'Spanish',
+                      'French',
+                      'Japanese',
+                      'German',
+                      'Portuguese',
+                      'Russian',
+                      'Arabic',
+                      'Hindi',
+                      'Italian',
+                    ]
+                    .map((String language) {
+                      return ListTile(
+                        title: Text(
+                          Provider.of<LanguageProvider>(context, listen: false).getLanguageFullName(language)
+                        ), // Display the full name of the language
+                        trailing: _tempSelectedLanguage == language
+                            ? const Icon(Icons.check, color: Colors.blue) // Show a check icon if selected
+                            : null,
+                        onTap: () {
+                          setState(() {
+                            _tempSelectedLanguage = language;  // Set the tapped language
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop();  // ダイアログを閉じる
+                    Navigator.of(context).pop();  // Close the dialog
                   },
-                  child: Text(Provider.of<LanguageProvider>(context, listen: false).getLocalizedString('cancel')), // キャンセルボタン
+                  child: Text(
+                    Provider.of<LanguageProvider>(context, listen: false).getLocalizedString('cancel')
+                  ), // Cancel button
                 ),
                 TextButton(
                   onPressed: () {
                     if (_tempSelectedLanguage != Provider.of<LanguageProvider>(context, listen: false).selectedLanguage) {
+                      // Update the language if it is different from the currently selected one
+                      Provider.of<LanguageProvider>(context, listen: false).updateLanguage(_tempSelectedLanguage);
 
-                      Provider.of<LanguageProvider>(context, listen: false).updateLanguage(_tempSelectedLanguage);  // 言語を更新
-                      
-                      if(menuItems.isNotEmpty){
+                      // Optionally perform any action like clearing menu items
+                      if(menuItems.isNotEmpty) {
                         selectDeleteMenu(context);
                       }
-                    }else{
-                      Navigator.of(context).pop();
+                    } else {
+                      Navigator.of(context).pop();  // Close the dialog if no change is made
                     }
-                    
                   },
-                  child: Text(Provider.of<LanguageProvider>(context, listen: false).getLocalizedString('confirm')), // 確認ボタン
+                  child: Text(
+                    Provider.of<LanguageProvider>(context, listen: false).getLocalizedString('confirm')
+                  ), // Confirm button
                 ),
               ],
             );

@@ -48,6 +48,18 @@ class LanguageProvider with ChangeNotifier {
         return 'Es';
       case 'French':
         return 'Fr';
+      case 'German':
+        return 'De';
+      case 'Portuguese':
+        return 'Pt';
+      case 'Russian':
+        return 'Ru';
+      case 'Arabic':
+        return 'Ar';
+      case 'Hindi':
+        return 'Hi';
+      case 'Italian':
+        return 'It';
       default:
         return 'En';
     }
@@ -68,28 +80,42 @@ class LanguageProvider with ChangeNotifier {
         return 'Spanish';
       case 'French':
         return 'French';
+      case 'German':
+        return 'German';
+      case 'Portuguese':
+        return 'Portuguese';
+      case 'Russian':
+        return 'Russian';
+      case 'Arabic':
+        return 'Arabic';
+      case 'Hindi':
+        return 'Hindi';
+      case 'Italian':
+        return 'Italian';
       default:
         return 'English';
     }
   }
 
-    // 言語に応じた店名と「menu」の順番を決定するメソッド
+  // 言語に応じた店名と「menu」の順番を決定するメソッド
   String getMenuTitleOrder() {
     switch (_selectedLanguage) {
       case 'Japanese':
-        return 'front';
       case 'English':
-        return 'front'; 
       case 'Korean':
-        return 'front';  
       case 'Chinese':
-        return 'front';  
+        return 'front';
       case 'Spanish':
-        return 'back'; 
       case 'French':
-        return 'back';  
+      case 'German':
+      case 'Portuguese':
+      case 'Russian':
+      case 'Arabic':
+      case 'Hindi':
+      case 'Italian':
+        return 'back';
       default:
-        return 'front'; // デフォルトは店名が前
+        return 'front';
     }
   }
 
@@ -108,6 +134,18 @@ class LanguageProvider with ChangeNotifier {
         return _spanishStrings[key] ?? key;
       case 'French':
         return _frenchStrings[key] ?? key;
+      case 'German':
+        return _germanStrings[key] ?? key;
+      case 'Portuguese':
+        return _portugueseStrings[key] ?? key;
+      case 'Russian':
+        return _russianStrings[key] ?? key;
+      case 'Arabic':
+        return _arabicStrings[key] ?? key;
+      case 'Hindi':
+        return _hindiStrings[key] ?? key;
+      case 'Italian':
+        return _italianStrings[key] ?? key;
       default:
         return _englishStrings[key] ?? key;
     }
@@ -339,5 +377,229 @@ class LanguageProvider with ChangeNotifier {
     'dontdelete': 'Ne pas supprimer',
     'delete_all_menus_forlang': 'Souhaitez-vous supprimer le menu qui existe déjà ?',
     'generating': 'Génération d\'image par IA', 
+  };
+
+  // German (Deutsch)
+  final Map<String, String> _germanStrings = {
+    'menu': 'Menü von',
+    '_menu': 'Menü-Bildschirm',
+    'MenuBite': 'MenuBite',
+    'Lang': 'Sprache',
+    'camera': 'Kamera',
+    'order_history': 'Bestellverlauf',
+    'Order_Phrase': 'Bestellbildschirm',
+    'language': 'Sprache',
+    'select_language': 'Sprache wählen',
+    'cancel': 'Abbrechen',
+    'confirm': 'Bestätigen',
+    'loading': 'Laden...',
+    'menu items': 'Menüpunkte',
+    'show_to_staff': 'Bitte zeigen Sie diesen Bildschirm dem Personal.',
+    'I_would_like_to_order_the_dishes.': '(Ich möchte diese Gerichte bestellen.)',
+    'order_completed': 'Bestellung abgeschlossen',
+    'no_order_history': 'Keine Bestellhistorie.',
+    'order': 'Bestellung',
+    'no_menu': 'Kein Menü vorhanden.',
+    'thank_you': 'Danke schön!',
+    'image_uploaded': 'Bild wurde hochgeladen.',
+    'ok': 'OK',
+    'error': 'Fehler',
+    'failed_to_upload_image': 'Hochladen fehlgeschlagen. Bitte versuchen Sie es erneut.',
+    'upload_image': 'Bild hochladen',
+    'delete': 'Löschen',
+    'delete_all_menus': 'Alle Menüs löschen',
+    'delete_all_menus_confirmation': 'Möchten Sie alle Menüs wirklich löschen?',
+    'Sorry.': 'Entschuldigung.',
+    'Faildish': 'Gericht nicht gefunden. Bitte versuchen Sie es erneut.',
+    'Preview': 'Vorschau',
+    'dontdelete': 'Nicht löschen',
+    'delete_all_menus_forlang': 'Möchten Sie alle bestehenden Menüs löschen?',
+    'generating': 'AI-Bild wird generiert...',
+  };
+
+  // Portuguese (Português)
+  final Map<String, String> _portugueseStrings = {
+    'menu': 'Menu de',
+    '_menu': 'Tela do menu',
+    'MenuBite': 'MenuBite',
+    'Lang': 'Idioma',
+    'camera': 'Câmera',
+    'order_history': 'Histórico de pedidos',
+    'Order_Phrase': 'Tela de pedido',
+    'language': 'Idioma',
+    'select_language': 'Selecionar idioma',
+    'cancel': 'Cancelar',
+    'confirm': 'Confirmar',
+    'loading': 'Carregando...',
+    'menu items': 'Itens do menu',
+    'show_to_staff': 'Mostre esta tela ao funcionário.',
+    'I_would_like_to_order_the_dishes.': '(Eu gostaria de pedir estes pratos.)',
+    'order_completed': 'Pedido concluído',
+    'no_order_history': 'Nenhum histórico de pedidos.',
+    'order': 'Pedido',
+    'no_menu': 'Nenhum menu disponível.',
+    'thank_you': 'Obrigado!',
+    'image_uploaded': 'Imagem enviada.',
+    'ok': 'OK',
+    'error': 'Erro',
+    'failed_to_upload_image': 'Falha ao enviar. Tente novamente.',
+    'upload_image': 'Enviar imagem',
+    'delete': 'Excluir',
+    'delete_all_menus': 'Excluir todos os menus',
+    'delete_all_menus_confirmation': 'Deseja excluir todos os menus?',
+    'Sorry.': 'Desculpe.',
+    'Faildish': 'Prato não encontrado. Tente novamente.',
+    'Preview': 'Pré-visualização',
+    'dontdelete': 'Não excluir',
+    'delete_all_menus_forlang': 'Deseja excluir todos os menus existentes?',
+    'generating': 'Gerando imagem AI...',
+  };
+
+  final Map<String, String> _russianStrings = {
+    'menu': 'Меню от',
+    '_menu': 'Экран меню',
+    'MenuBite': 'MenuBite',
+    'Lang': 'Язык',
+    'camera': 'Камера',
+    'order_history': 'История заказов',
+    'Order_Phrase': 'Экран заказа',
+    'language': 'Язык',
+    'select_language': 'Выберите язык',
+    'cancel': 'Отмена',
+    'confirm': 'Подтвердить',
+    'loading': 'Загрузка...',
+    'menu items': 'Пункты меню',
+    'show_to_staff': 'Пожалуйста, покажите этот экран персоналу.',
+    'I_would_like_to_order_the_dishes.': '(Я хотел бы заказать эти блюда.)',
+    'order_completed': 'Заказ выполнен',
+    'no_order_history': 'История заказов отсутствует.',
+    'order': 'Заказ',
+    'no_menu': 'Меню отсутствует.',
+    'thank_you': 'Спасибо!',
+    'image_uploaded': 'Изображение загружено.',
+    'ok': 'ОК',
+    'error': 'Ошибка',
+    'failed_to_upload_image': 'Ошибка загрузки. Попробуйте снова.',
+    'upload_image': 'Загрузить изображение',
+    'delete': 'Удалить',
+    'delete_all_menus': 'Удалить все меню',
+    'delete_all_menus_confirmation': 'Вы действительно хотите удалить все меню?',
+    'Sorry.': 'Извините.',
+    'Faildish': 'Блюдо не найдено. Попробуйте снова.',
+    'Preview': 'Предпросмотр',
+    'dontdelete': 'Не удалять',
+    'delete_all_menus_forlang': 'Удалить все существующие меню?',
+    'generating': 'Генерация AI-изображения...',
+  };
+
+  final Map<String, String> _arabicStrings = {
+    'menu': 'قائمة الطعام لـ',
+    '_menu': 'شاشة القائمة',
+    'MenuBite': 'MenuBite',
+    'Lang': 'اللغة',
+    'camera': 'الكاميرا',
+    'order_history': 'تاريخ الطلبات',
+    'Order_Phrase': 'شاشة الطلب',
+    'language': 'اللغة',
+    'select_language': 'اختر اللغة',
+    'cancel': 'إلغاء',
+    'confirm': 'تأكيد',
+    'loading': 'جارٍ التحميل...',
+    'menu items': 'عناصر القائمة',
+    'show_to_staff': 'يرجى عرض هذه الشاشة على الموظف.',
+    'I_would_like_to_order_the_dishes.': '(أود طلب هذه الأطباق.)',
+    'order_completed': 'تم إكمال الطلب',
+    'no_order_history': 'لا يوجد سجل طلبات.',
+    'order': 'طلب',
+    'no_menu': 'لا توجد قائمة طعام.',
+    'thank_you': 'شكراً لك!',
+    'image_uploaded': 'تم رفع الصورة.',
+    'ok': 'موافق',
+    'error': 'خطأ',
+    'failed_to_upload_image': 'فشل في الرفع. حاول مرة أخرى.',
+    'upload_image': 'رفع الصورة',
+    'delete': 'حذف',
+    'delete_all_menus': 'حذف جميع القوائم',
+    'delete_all_menus_confirmation': 'هل تريد بالتأكيد حذف جميع القوائم؟',
+    'Sorry.': 'عذراً.',
+    'Faildish': 'لم يتم العثور على الطبق. حاول مرة أخرى.',
+    'Preview': 'معاينة',
+    'dontdelete': 'لا تحذف',
+    'delete_all_menus_forlang': 'هل تريد حذف جميع القوائم الموجودة؟',
+    'generating': 'يتم إنشاء صورة AI...',
+  };
+
+  final Map<String, String> _hindiStrings = {
+    'menu': 'का मेनू',
+    '_menu': 'मेनू स्क्रीन',
+    'MenuBite': 'MenuBite',
+    'Lang': 'भाषा',
+    'camera': 'कैमरा',
+    'order_history': 'आदेश इतिहास',
+    'Order_Phrase': 'आदेश स्क्रीन',
+    'language': 'भाषा',
+    'select_language': 'भाषा चुनें',
+    'cancel': 'रद्द करें',
+    'confirm': 'पुष्टि करें',
+    'loading': 'लोड हो रहा है...',
+    'menu items': 'मेनू आइटम',
+    'show_to_staff': 'कृपया यह स्क्रीन स्टाफ को दिखाएं।',
+    'I_would_like_to_order_the_dishes.': '(मैं इन व्यंजनों का आदेश देना चाहूंगा।)',
+    'order_completed': 'आदेश पूरा हुआ',
+    'no_order_history': 'कोई आदेश इतिहास नहीं है।',
+    'order': 'आदेश',
+    'no_menu': 'कोई मेनू उपलब्ध नहीं है।',
+    'thank_you': 'धन्यवाद!',
+    'image_uploaded': 'छवि अपलोड हो गई है।',
+    'ok': 'ठीक है',
+    'error': 'त्रुटि',
+    'failed_to_upload_image': 'अपलोड करने में विफल। कृपया पुनः प्रयास करें।',
+    'upload_image': 'छवि अपलोड करें',
+    'delete': 'हटाएं',
+    'delete_all_menus': 'सभी मेनू हटाएं',
+    'delete_all_menus_confirmation': 'क्या आप सभी मेनू को हटाना चाहते हैं?',
+    'Sorry.': 'माफ़ कीजिए।',
+    'Faildish': 'डिश नहीं मिली। कृपया पुनः प्रयास करें।',
+    'Preview': 'पूर्वावलोकन',
+    'dontdelete': 'हटाएं नहीं',
+    'delete_all_menus_forlang': 'क्या आप सभी मौजूदा मेनू हटाना चाहते हैं?',
+    'generating': 'AI छवि उत्पन्न की जा रही है...',
+  };
+
+  final Map<String, String> _italianStrings = {
+    'menu': 'Menu di',
+    '_menu': 'Schermata menu',
+    'MenuBite': 'MenuBite',
+    'Lang': 'Lingua',
+    'camera': 'Fotocamera',
+    'order_history': 'Cronologia ordini',
+    'Order_Phrase': 'Schermata ordine',
+    'language': 'Lingua',
+    'select_language': 'Seleziona lingua',
+    'cancel': 'Annulla',
+    'confirm': 'Conferma',
+    'loading': 'Caricamento...',
+    'menu items': 'Elementi del menu',
+    'show_to_staff': 'Si prega di mostrare questa schermata al personale.',
+    'I_would_like_to_order_the_dishes.': '(Vorrei ordinare questi piatti.)',
+    'order_completed': 'Ordine completato',
+    'no_order_history': 'Nessuna cronologia ordini.',
+    'order': 'Ordine',
+    'no_menu': 'Nessun menu disponibile.',
+    'thank_you': 'Grazie!',
+    'image_uploaded': 'Immagine caricata.',
+    'ok': 'OK',
+    'error': 'Errore',
+    'failed_to_upload_image': 'Caricamento fallito. Riprova.',
+    'upload_image': 'Carica immagine',
+    'delete': 'Elimina',
+    'delete_all_menus': 'Elimina tutti i menu',
+    'delete_all_menus_confirmation': 'Sei sicuro di voler eliminare tutti i menu?',
+    'Sorry.': 'Mi dispiace.',
+    'Faildish': 'Piatto non trovato. Riprova.',
+    'Preview': 'Anteprima',
+    'dontdelete': 'Non eliminare',
+    'delete_all_menus_forlang': 'Vuoi eliminare tutti i menu esistenti?',
+    'generating': 'Generazione immagine AI in corso...',
   };
 }

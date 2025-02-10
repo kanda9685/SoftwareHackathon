@@ -148,14 +148,7 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
 
     return Scaffold(
       appBar: AppBar(
-        title: widget.menuItems.isEmpty || widget.menuItems[0].shopName.isEmpty
-            ? Text(languageProvider.getLocalizedString('_menu'))
-            : SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: languageProvider.getMenuTitleOrder() == 'front'
-                    ? Text(widget.menuItems[0].shopName + languageProvider.getLocalizedString('menu'))
-                    : Text(languageProvider.getLocalizedString('menu') + widget.menuItems[0].shopName),
-              ),
+        title:  const Text("Menu Bite"),
         actions: [
           TextButton(
             onPressed: () => _showLanguageDialog(context),
@@ -453,84 +446,99 @@ class _MenuGridScreenState extends State<MenuGridScreen> with TickerProviderStat
     }
   }
 
-  // 言語選択ダイアログの表示
-  void _showLanguageDialog(BuildContext context) {
-  String _tempSelectedLanguage = Provider.of<LanguageProvider>(context, listen: false).selectedLanguage;
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      final languageProvider = Provider.of<LanguageProvider>(context);
-      return StatefulBuilder(  // StatefulBuilderを使用して、ダイアログ内でsetStateを呼び出せるようにする
-        builder: (BuildContext context, StateSetter setState) {
-          return AlertDialog(
-            title: Text(languageProvider.getLocalizedString('select_language')),
-            content: Container(
-              width: double.maxFinite,
-              child: ListView(
-                shrinkWrap: true,
-                children: <String>['Japanese', 'English', 'Korean', 'Chinese', 'Spanish', 'French']
-                    .map((String language) {
-                  return ListTile(
-                    title: Text(language),
-                    trailing: _tempSelectedLanguage == language
-                        ? const Icon(Icons.check, color: Colors.blue)
-                        : null,
-                    onTap: () {
-                      // タップ時に選択された言語を更新し、setStateでUIを更新
-                      setState(() {
-                        _tempSelectedLanguage = language;
-                      });
-                    },
-                  );
-                }).toList(),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text(languageProvider.getLocalizedString('cancel')),
-              ),
-              TextButton(
-                onPressed: () async {
-                  // 言語が変更された場合のみ更新を実行
-                  if (_tempSelectedLanguage != Provider.of<LanguageProvider>(context, listen: false).selectedLanguage) {
-                    // 言語の更新を行う
-                    Provider.of<LanguageProvider>(context, listen: false)
-                        .updateLanguage(_tempSelectedLanguage);
-                    if (widget.menuItems.isNotEmpty) {
-                      // 通信中ダイアログを表示
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            content: Row(
-                              children: [
-                                const CircularProgressIndicator(),
-                                const SizedBox(width: 20),
-                                Text(languageProvider.getLocalizedString('loading')),
-                              ],
-                            ),
-                          );
+ void _showLanguageDialog(BuildContext context) {
+    String _tempSelectedLanguage = Provider.of<LanguageProvider>(context, listen: false).selectedLanguage;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final languageProvider = Provider.of<LanguageProvider>(context);
+        return StatefulBuilder(  // StatefulBuilder to manage setState within the dialog
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              title: Text(languageProvider.getLocalizedString('select_language')),
+              content: Container(
+                width: double.maxFinite,
+                constraints: BoxConstraints(maxHeight: 400), // Ensure content doesn't overflow
+                child: Scrollbar(  // Add scrollbar around ListView
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: <String>[
+                      'English',
+                      'Korean',
+                      'Chinese',
+                      'Spanish',
+                      'French',
+                      'Japanese',
+                      'German',
+                      'Portuguese',
+                      'Russian',
+                      'Arabic',
+                      'Hindi',
+                      'Italian',
+                    ].map((String language) {
+                      return ListTile(
+                        title: Text(language),
+                        trailing: _tempSelectedLanguage == language
+                            ? const Icon(Icons.check, color: Colors.blue)
+                            : null,
+                        onTap: () {
+                          // Update the selected language on tap and trigger UI update
+                          setState(() {
+                            _tempSelectedLanguage = language;
+                          });
                         },
                       );
-                      await _updateLanguageForMenuItems();
-                      updateCategories();
-                      Navigator.of(context).pop(); 
-                    }
-                  }
-                  Navigator.of(context).pop();
-                },
-                child: Text(languageProvider.getLocalizedString('confirm')),
+                    }).toList(),
+                  ),
+                ),
               ),
-            ],
-          );
-        },
-      );
-    },
-  );
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog when Cancel is pressed
+                  },
+                  child: Text(languageProvider.getLocalizedString('cancel')),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    // Only update the language if it's changed
+                    if (_tempSelectedLanguage != Provider.of<LanguageProvider>(context, listen: false).selectedLanguage) {
+                      // Update the language provider
+                      Provider.of<LanguageProvider>(context, listen: false).updateLanguage(_tempSelectedLanguage);
+
+                      if (widget.menuItems.isNotEmpty) {
+                        // Show loading dialog while updating language for menu items
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false, // Don't dismiss dialog by tapping outside
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              content: Row(
+                                children: [
+                                  const CircularProgressIndicator(),
+                                  const SizedBox(width: 20),
+                                  Text(languageProvider.getLocalizedString('loading')),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                        // Perform the language update task asynchronously
+                        await _updateLanguageForMenuItems();
+                        updateCategories();
+                        Navigator.of(context).pop();  // Close loading dialog
+                      }
+                    }
+                    Navigator.of(context).pop();  // Close language dialog after confirming
+                  },
+                  child: Text(languageProvider.getLocalizedString('confirm')),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   void _showDeleteConfirmationDialog(BuildContext context) {
